@@ -33,7 +33,7 @@
   <aside class="sidebar">
     <div class="logo">♫ Music Notebook</div>
     <div class="muted small">Cross-device interface concept</div>
-    <div class="label" style="margin-top:27px">Song library · 3</div>
+    <div class="label" style="margin-top:27px">Song library · 4</div>
     <nav id="catalog" aria-label="Song catalog"></nav>
     <p class="muted small" style="line-height:1.5;margin-top:25px">Tap any song to explore the proposed layout. All score material is labeled as a demo, not a transcription.</p>
   </aside>
@@ -267,9 +267,65 @@ const songs=[
         "url": "https://www.cifraclub.com.br/foo-fighters/learn-to-fly/tabs-baixo/sjwkp.html"
       }
     ]
-  }
+  },
+{
+  "id": "born-to-be-wild",
+  "title": "Born to Be Wild",
+  "artist": "Steppenwolf",
+  "key": "Em (published main arrangement)",
+  "progression": "E5 → G5 → A → E5",
+  "intro": "E5 (main riff)",
+  "sections": [
+    {
+      "name": "Intro",
+      "chords": [
+        "E5"
+      ]
+    },
+    {
+      "name": "Verse",
+      "chords": [
+        "E5"
+      ]
+    },
+    {
+      "name": "Chorus",
+      "chords": [
+        "G5",
+        "A",
+        "E5"
+      ]
+    },
+    {
+      "name": "Instrumental",
+      "chords": [
+        "E5",
+        "G5",
+        "A"
+      ]
+    }
+  ],
+  "notes": "Main published electric guitar chart uses an E5 riff, with G5–A–E5 changes; some simplified charts use other chord voicings. Song sequence and duration still need confirmation.",
+  "parts": [
+    "Guitar",
+    "Bass",
+    "Drums",
+    "Keys",
+    "Vocals"
+  ],
+  "sources": [
+    {
+      "label": "Guitar chords and riff · Cifra Club",
+      "url": "https://www.cifraclub.com.br/steppenwolf/born-to-be-wild/"
+    },
+    {
+      "label": "Bass tab · Cifra Club",
+      "url": "https://www.cifraclub.com.br/steppenwolf/born-to-be-wild/tabs-baixo/"
+    }
+  ]
+}
 ];
-const bass={"nos-vamos-invadir-sua-praia":{"tuning":"E–A–D–G (4-string)","source":"https://www.cifraclub.com.br/ultraje-a-rigor/nos-vamos-invadir-sua-praia/tabs-baixo/","note":"Bass transcription is labeled A; the guitar chord chart is labeled Em. These arrangements may not correspond directly. Confirm tuning and tonal center against the recording.","sections":[{"name":"Intro","strings":[{"string":"A","frets":"0 → 7 (slide), 7 → 19 (slide)"},{"string":"E","frets":"0 (pedal)"}],"technique":"Slides and sustained notes; the published intro also marks slap/pop on a subsequent higher-register riff."},{"name":"Recurring upper riff","strings":[{"string":"A","frets":"7 → 5 → 4"},{"string":"G","frets":"9 → 7 → 6"}],"technique":"Upper-register figures shown in the source, with slap/pop markings."}]},"i-saw-you-saying":{"tuning":"E–A–D–G (4-string)","source":"https://www.cifraclub.com.br/raimundos/i-saw-you-saying-that-you-say-that-you-saw/tabs-baixo/","note":"Summary of the published arrangement; displayed frets identify recurring note material, not full measured transcriptions.","sections":[{"name":"Intro opening","strings":[{"string":"A","frets":"2 (B) → 0 (A) → 5 (D)"}],"technique":"Repeated attacks and short passing notes."},{"name":"Verse / refrain groove","strings":[{"string":"E","frets":"5 (A) → 7 (B) → 2 (F♯) → 0 (E)"}],"technique":"Driving repeated eighth-note feel, with passing notes."},{"name":"Verse turnaround","strings":[{"string":"A","frets":"4 (C♯) → 5 (D) → 2 (B) → 7 (E)"}],"technique":"Repeated bass notes supporting harmonic movement."}]},"learn-to-fly":{"tuning":"E–A–D–G (4-string)","source":"https://www.cifraclub.com.br/foo-fighters/learn-to-fly/tabs-baixo/","note":"Bass summary based on the published principal transcription; rhythm and exact repetitions are simplified in this view.","sections":[{"name":"Intro / chorus","strings":[{"string":"A","frets":"2 (B)"},{"string":"E","frets":"2 (F♯) → 0 (E)"}],"technique":"Repeated roots, with the E note sustained across the longer phrase."},{"name":"Verse","strings":[{"string":"A","frets":"2 (B) — sustain"},{"string":"E","frets":"2 (F♯) → 0 (E) — sustain"}],"technique":"Longer held notes compared with the driving intro/chorus."}]}};
+const bass={"nos-vamos-invadir-sua-praia":{"tuning":"E–A–D–G (4-string)","source":"https://www.cifraclub.com.br/ultraje-a-rigor/nos-vamos-invadir-sua-praia/tabs-baixo/","note":"Bass transcription is labeled A; the guitar chord chart is labeled Em. These arrangements may not correspond directly. Confirm tuning and tonal center against the recording.","sections":[{"name":"Intro","strings":[{"string":"A","frets":"0 → 7 (slide), 7 → 19 (slide)"},{"string":"E","frets":"0 (pedal)"}],"technique":"Slides and sustained notes; the published intro also marks slap/pop on a subsequent higher-register riff."},{"name":"Recurring upper riff","strings":[{"string":"A","frets":"7 → 5 → 4"},{"string":"G","frets":"9 → 7 → 6"}],"technique":"Upper-register figures shown in the source, with slap/pop markings."}]},"i-saw-you-saying":{"tuning":"E–A–D–G (4-string)","source":"https://www.cifraclub.com.br/raimundos/i-saw-you-saying-that-you-say-that-you-saw/tabs-baixo/","note":"Summary of the published arrangement; displayed frets identify recurring note material, not full measured transcriptions.","sections":[{"name":"Intro opening","strings":[{"string":"A","frets":"2 (B) → 0 (A) → 5 (D)"}],"technique":"Repeated attacks and short passing notes."},{"name":"Verse / refrain groove","strings":[{"string":"E","frets":"5 (A) → 7 (B) → 2 (F♯) → 0 (E)"}],"technique":"Driving repeated eighth-note feel, with passing notes."},{"name":"Verse turnaround","strings":[{"string":"A","frets":"4 (C♯) → 5 (D) → 2 (B) → 7 (E)"}],"technique":"Repeated bass notes supporting harmonic movement."}]},"learn-to-fly":{"tuning":"E–A–D–G (4-string)","source":"https://www.cifraclub.com.br/foo-fighters/learn-to-fly/tabs-baixo/","note":"Bass summary based on the published principal transcription; rhythm and exact repetitions are simplified in this view.","sections":[{"name":"Intro / chorus","strings":[{"string":"A","frets":"2 (B)"},{"string":"E","frets":"2 (F♯) → 0 (E)"}],"technique":"Repeated roots, with the E note sustained across the longer phrase."},{"name":"Verse","strings":[{"string":"A","frets":"2 (B) — sustain"},{"string":"E","frets":"2 (F♯) → 0 (E) — sustain"}],"technique":"Longer held notes compared with the driving intro/chorus."}]},"born-to-be-wild":{"tuning":"E–A–D–G (4-string)","source":"https://www.cifraclub.com.br/steppenwolf/born-to-be-wild/tabs-baixo/","note":"Concise fret summary from the published bass tablature; rhythmic values and exact repetitions are omitted.","sections":[{"name":"Intro","strings":[{"string":"A","frets":"2/5 → 7 (slide and repeated notes)"},{"string":"G","frets":"7h9 → 7 → 9 → 7"}],"technique":"Slide into riff; hammer-on fill."},{"name":"Verse","strings":[{"string":"A","frets":"7 → 5 → 7"},{"string":"E","frets":"7 passing note"}],"technique":"Repeated E-centered driving pattern."}]}};
 let view='simple',step=0;
 const notes=['E2','D3','G3','B3','E4','B3','G3','D3'];
 const chords=['Em7','Cmaj7','G','D'];
