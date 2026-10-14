@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>Music Notebook — Interface Preview</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0c1220;--panel:#172235;--panel2:#1d2c42;--line:#30425a;--text:#eff5ff;--sub:#a9bad0;--accent:#86b6ff}
+    *{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(ellipse at 80% 0%,#1b3450,var(--bg) 50%);color:var(--text);margin:0;min-height:100vh}
+    button,select{font:inherit}button{cursor:pointer}.layout{max-width:1150px;margin:auto;padding:20px;display:grid;grid-template-columns:245px minmax(0,1fr);gap:22px}
+    .sidebar{border:1px solid var(--line);border-radius:18px;background:#111d30;padding:18px;align-self:start;position:sticky;top:20px}
+    .logo{font-weight:850;letter-spacing:-.04em;font-size:23px;margin:4px 0 5px}.muted{color:var(--sub)}.small{font-size:12px}.label{text-transform:uppercase;letter-spacing:.13em;font-size:11px;color:#99baff;font-weight:700}
+    .sidebar nav{display:grid;gap:8px;margin-top:22px}.song-link{border:1px solid transparent;border-radius:11px;text-align:left;color:var(--text);background:transparent;padding:13px;width:100%}.song-link small{display:block;color:var(--sub);margin-top:4px}
+    .song-link.active{background:var(--panel2);border-color:#416492}.song-link:hover{background:#223249}
+    .main{min-width:0}.heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:14px 0 22px}
+    h1{font-size:clamp(27px,4vw,41px);line-height:1.13;letter-spacing:-.04em;margin:7px 0 11px}h2{font-size:20px;margin:0}h3{font-size:15px;margin:0 0 9px}
+    .pill{border:1px solid #456080;background:#1b304b;border-radius:10px;padding:10px 13px;font-size:12px;white-space:nowrap}
+    .panel{border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:22px;margin-bottom:16px}
+    .intro{line-height:1.7}.overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}.stat{background:#101b2d;border-radius:10px;padding:16px}.stat b{display:block;margin-top:8px;font-size:17px}
+    .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:18px 0}.control{background:#263952;color:#d3e5ff;border:1px solid #3b526f;border-radius:9px;padding:10px 15px}.control.active{background:#4171b8;border-color:#6798e5;color:white}
+    .score{background:#f9fbff;color:#1a2636;border-radius:12px;padding:18px;overflow-x:auto}.score pre{font:15px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;min-width:330px;margin:0}
+    .bar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.bar{border-radius:9px;background:#e4eefa;text-align:center;padding:12px 6px}.bar small{display:block;font-size:11px;color:#576982}.bar b{font-size:21px}
+    .empty{border:1px dashed #59708e;border-radius:12px;padding:24px;line-height:1.6;color:#cad6e7}.instrument-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .chip{border:1px solid #3d5471;border-radius:25px;padding:7px 12px;font-size:12px;color:#c3d4ea}.status{color:#ffdca4}.foot{font-size:12px;color:var(--sub);padding:14px 0 26px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.example{font-size:12px;color:#48607e;margin-bottom:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    @media(max-width:720px){.layout{grid-template-columns:1fr;padding:12px;gap:12px}.sidebar{position:static}.sidebar nav{grid-template-columns:1fr 1fr 1fr}.song-link{font-size:12px;padding:10px}.panel{padding:16px}.overview{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.heading{margin-top:0}.pill{white-space:normal}.bar-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:410px){.sidebar nav{grid-template-columns:1fr}.heading{flex-direction:column}.overview{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="logo">♫ Music Notebook</div>
+    <div class="muted small">Cross-device interface concept</div>
+    <div class="label" style="margin-top:27px">Song library · 3</div>
+    <nav id="catalog" aria-label="Song catalog"></nav>
+    <p class="muted small" style="line-height:1.5;margin-top:25px">Tap any song to explore the proposed layout. All score material is labeled as a demo, not a transcription.</p>
+  </aside>
+  <main class="main">
+    <div class="heading">
+      <div><div class="label">Song workspace / Prototype 01</div><h1 id="title"></h1><div id="artist" class="muted"></div></div>
+      <span class="pill status">● Transcription pending</span>
+    </div>
+    <section class="panel">
+      <div class="label">Song overview</div>
+      <div class="overview">
+        <div class="stat"><span class="muted small">Key</span><b>Not entered</b></div>
+        <div class="stat"><span class="muted small">Tempo</span><b>Not entered</b></div>
+        <div class="stat"><span class="muted small">Time signature</span><b>Not entered</b></div>
+      </div>
+      <div class="row"><h2>Parts to document</h2><span class="muted small">Planning fields</span></div>
+      <div id="instruments" class="instrument-row"></div>
+    </section>
+    <section class="panel">
+      <div class="row"><h2>Sections & notes</h2><span class="muted small">Expandable detail</span></div>
+      <p class="muted intro" id="notes"></p>
+      <div class="empty"><b>Section 01 · Add notation</b><p class="small">Reserved for verified chords, rhythm patterns, tablature, lyrics cues, and time-indexed harmonic context for this song.</p></div>
+    </section>
+    <section class="panel">
+      <div class="row"><h2>Notation interaction demo</h2><span class="pill">Original exercise</span></div>
+      <p class="muted small intro">The following E-minor arpeggio and chords are an unrelated technical demonstration. They do not represent the selected song.</p>
+      <div class="controls" role="group" aria-label="Notation detail">
+        <button class="control active" data-view="simple">Simple</button>
+        <button class="control" data-view="tab">Tablature</button>
+        <button class="control" data-view="animated">Step animation</button>
+      </div>
+      <div id="demo" class="score" aria-live="polite"></div>
+      <div class="grid2" style="margin-top:15px">
+        <div class="stat"><span class="muted small">Demo key / harmony</span><b>E minor · i⁷ – VImaj7 – III – VII</b></div>
+        <div class="stat"><span class="muted small">Demo chord tones</span><b id="tones">E · G · B · D</b></div>
+      </div>
+    </section>
+    <p class="foot">Static GitHub Pages preview. Song data is a catalog stub; demo controls work locally in the browser, without a backend or sound.</p>
+  </main>
+</div>
+<script>
+const songs=[
+  {id:'nos-vamos-invadir-sua-praia',title:'Nós Vamos Invadir Sua Praia',artist:'Ultraje a Rigor',notes:'Suggested evaluation: guitar and bass riffs, song form, vocal entries and performance cues.',parts:['Guitar','Bass','Drums','Vocals']},
+  {id:'i-saw-you-saying',title:'I Saw You Saying (That You Say That You Saw)',artist:'Raimundos',notes:'Suggested evaluation: guitar articulation, rhythm precision and vocal cues.',parts:['Guitar','Bass','Drums','Vocals']},
+  {id:'learn-to-fly',title:'Learn to Fly',artist:'Foo Fighters',notes:'Suggested evaluation: layered guitar parts, bass, drums, vocal lines and arrangement transitions.',parts:['Guitar 1','Guitar 2','Bass','Drums','Vocals']}
+];
+let view='simple',step=0;
+const notes=['E2','D3','G3','B3','E4','B3','G3','D3'];
+const chords=['Em7','Cmaj7','G','D'];
+const catalog=document.querySelector('#catalog'),demo=document.querySelector('#demo');
+function currentSong(){const id=decodeURIComponent(location.hash.slice(1));return songs.find(s=>s.id===id)||songs[0]}
+function paintSong(){
+  const s=currentSong();
+  document.querySelector('#title').textContent=s.title;
+  document.querySelector('#artist').textContent=s.artist;
+  document.querySelector('#notes').textContent=s.notes;
+  document.querySelector('#instruments').innerHTML=s.parts.map(p=>'<span class="chip">'+p+'</span>').join('');
+  catalog.innerHTML=songs.map(a=>'<button class="song-link '+(a.id===s.id?'active':'')+'" data-id="'+a.id+'">'+a.title+'<small>'+a.artist+'</small></button>').join('');
+  catalog.querySelectorAll('button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.id});
+  document.title=s.title+' — Music Notebook';
+}
+function paintDemo(){
+  document.querySelectorAll('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===view);b.setAttribute('aria-pressed',String(b.dataset.view===view))});
+  if(view==='simple')demo.innerHTML='<div class="example">Chord timeline · 4 demonstration measures</div><div class="bar-grid">'+chords.map((c,i)=>'<div class="bar"><small>BAR '+(i+1)+'</small><b>'+c+'</b></div>').join('')+'</div>';
+  if(view==='tab')demo.innerHTML='<div class="example">Guitar tab · original arpeggio example</div><pre>e|---------0-------|\nB|-------3---3-----|\nG|-----0-------0---|\nD|---0-----------0-|\nA|-----------------|\nE|-0---------------|</pre>';
+  if(view==='animated'){
+    demo.innerHTML='<div class="example">Step-by-step note highlighting (not timed playback)</div><div class="bar-grid">'+notes.map((n,i)=>'<div class="bar" style="'+(i===step?'background:#8fbcff;outline:2px solid #326cb2':'')+'"><small>STEP '+(i+1)+'</small><b>'+n+'</b></div>').join('')+'</div><div class="row" style="margin-top:14px"><button id="prev" class="control">← Previous</button><span class="small">Step '+(step+1)+' of 8</span><button id="next" class="control">Next →</button></div>';
+    document.querySelector('#prev').onclick=()=>{step=(step+7)%8;paintDemo()};
+    document.querySelector('#next').onclick=()=>{step=(step+1)%8;paintDemo()};
+  }
+}
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{view=b.dataset.view;paintDemo()});
+addEventListener('hashchange',paintSong);
+paintSong();paintDemo();
+</script>
+</body>
+</html>
