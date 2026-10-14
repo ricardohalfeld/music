@@ -26,7 +26,7 @@
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.example{font-size:12px;color:#48607e;margin-bottom:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
     @media(max-width:720px){.layout{grid-template-columns:1fr;padding:12px;gap:12px}.sidebar{position:static}.sidebar nav{grid-template-columns:1fr 1fr 1fr}.song-link{font-size:12px;padding:10px}.panel{padding:16px}.overview{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.heading{margin-top:0}.pill{white-space:normal}.bar-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:410px){.sidebar nav{grid-template-columns:1fr}.heading{flex-direction:column}.overview{grid-template-columns:1fr}}
-  .song-section{border:1px solid var(--line);margin:10px 0;border-radius:10px;padding:13px}.song-section summary{cursor:pointer;font-weight:650;display:flex;justify-content:space-between;gap:10px}.song-section[open]{background:#1c2c42}.source-link{border:1px solid #476794;padding:9px 12px;border-radius:10px;color:#a9ceff;font-size:13px;text-decoration:none}.source-link:hover{text-decoration:underline}.stat b{overflow-wrap:anywhere;font-size:15px}.bass-layer{border-color:#4b719d;margin-top:18px}.bass-layer>summary{color:#d4e5ff}.bass-notes{background:#0d1929;border-radius:10px;padding:12px;display:grid;gap:8px;margin-top:10px}.bass-string{display:flex;gap:18px;align-items:baseline;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;overflow-wrap:anywhere}.bass-string b{color:#9cc5ff;min-width:65px}.bass-layer .source-link{display:inline-block;margin:10px 0}</style>
+  .song-section{border:1px solid var(--line);margin:10px 0;border-radius:10px;padding:13px}.song-section summary{cursor:pointer;font-weight:650;display:flex;justify-content:space-between;gap:10px}.song-section[open]{background:#1c2c42}.source-link{border:1px solid #476794;padding:9px 12px;border-radius:10px;color:#a9ceff;font-size:13px;text-decoration:none}.source-link:hover{text-decoration:underline}.stat b{overflow-wrap:anywhere;font-size:15px}.bass-layer{border-color:#4b719d;margin-top:18px}.bass-layer>summary{color:#d4e5ff}.bass-notes{background:#0d1929;border-radius:10px;padding:12px;display:grid;gap:8px;margin-top:10px}.bass-string{display:flex;gap:18px;align-items:baseline;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;overflow-wrap:anywhere}.bass-string b{color:#9cc5ff;min-width:65px}.bass-layer .source-link{display:inline-block;margin:10px 0}.structure-timeline{display:flex;gap:8px;overflow-x:auto;padding:10px 0}.structure-step{flex:1;min-width:105px;border-radius:10px;border:1px solid #486387;background:#243953;color:#f2f6ff;padding:14px 10px;text-align:left}.structure-step small{display:block;color:#b4c6dd;margin-top:6px}.lyric-entry{margin:12px 0;border:1px solid var(--line);border-radius:11px;padding:12px}.lyric-entry label{display:block;font-weight:650;margin-bottom:8px}.lyric-entry textarea{width:100%;min-height:90px;resize:vertical;background:#0c1829;color:#f3f7ff;border:1px solid #4a6381;border-radius:9px;padding:11px;font:inherit;line-height:1.5}.lyric-entry textarea:focus{outline:2px solid #8ab9ff;outline-offset:2px}.lyrics-tip{color:#9eb1cc;font-size:12px;margin-top:6px}</style>
 </head>
 <body>
 <div class="layout">
@@ -51,6 +51,17 @@
       </div>
       <div class="row"><h2>Parts to document</h2><span class="muted small">Planning fields</span></div>
       <div id="instruments" class="instrument-row"></div>
+    </section>
+    <section class="panel">
+      <div class="row"><h2>Song structure</h2><span class="muted small">Section map · order not verified</span></div>
+      <p class="muted small">Select a section to expand its chord progression below. Repetitions and complete performance order still need verification.</p>
+      <div id="structureTimeline" class="structure-timeline"></div>
+    </section>
+    <section class="panel">
+      <div class="row"><h2>Lyrics & vocal cues</h2><span class="muted small">Personal notes · saved on this device</span></div>
+      <p class="muted small">Paste your own lyrics or write vocal-entry cues for each section. Notes are stored in this browser, not published to GitHub.</p>
+      <div id="lyricsSections"></div>
+      <div id="lyricsSources" class="instrument-row"></div>
     </section>
     <section class="panel">
       <div class="row"><h2>Sections & notes</h2><span class="muted small">Expandable detail</span></div>
@@ -272,6 +283,14 @@ function paintSong(){
   document.querySelector('#songKey').textContent=s.key;
   document.querySelector('#songProgression').textContent=s.progression;
   document.querySelector('#songIntro').textContent=s.intro;
+  document.querySelector('#structureTimeline').innerHTML=s.sections.map((section,i)=>'<button class="structure-step" data-index="'+i+'">'+(i+1)+'. '+section.name+'<small>'+section.chords.join(' · ')+'</small></button>').join('');
+  document.querySelectorAll('.structure-step').forEach(btn=>btn.onclick=()=>{const d=document.querySelectorAll('#songSections > details')[Number(btn.dataset.index)];d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});});
+  const lyricKey='music-notebook-lyrics-v1-'+s.id;
+  let saved={};try{saved=JSON.parse(localStorage.getItem(lyricKey)||'{}')}catch(e){saved={};}
+  const safeText=(str)=>String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+  document.querySelector('#lyricsSections').innerHTML=s.sections.map((section,i)=>'<div class="lyric-entry"><label for="lyrics-'+i+'">'+safeText(section.name)+'</label><textarea id="lyrics-'+i+'" data-section="'+i+'" placeholder="Enter personal lyrics, first-line memory cues, or vocal notes…">'+safeText(saved[i]||'')+'</textarea></div>').join('');
+  document.querySelectorAll('#lyricsSections textarea').forEach(box=>box.addEventListener('input',()=>{let data={};document.querySelectorAll('#lyricsSections textarea').forEach(t=>data[t.dataset.section]=t.value);try{localStorage.setItem(lyricKey,JSON.stringify(data));}catch(e){console.warn('Could not save lyrics locally',e);}}));
+  document.querySelector('#lyricsSources').innerHTML=s.sources.filter(source=>source.label.toLowerCase().includes('chord')).map(src=>'<a class="source-link" target="_blank" rel="noopener noreferrer" href="'+src.url+'">View published lyrics/chords ↗</a>').join('');
   document.querySelector('#songSections').innerHTML=s.sections.map(section=>'<details class="song-section"><summary>'+section.name+' <span class="muted small">Tap to expand</span></summary><div class="instrument-row">'+section.chords.map(chord=>'<span class="chip">'+chord+'</span>').join('')+'</div></details>').join('');
   const b=bass[s.id];
   document.querySelector('#bassContent').innerHTML='<p class="muted small"><b>Tuning:</b> '+b.tuning+'</p>'+b.sections.map(part=>'<details class="song-section"><summary>'+part.name+' <span class="muted small">Open pattern</span></summary><div class="bass-notes">'+part.strings.map(n=>'<div class="bass-string"><b>'+n.string+' string</b><span>'+n.frets+'</span></div>').join('')+'</div><p class="small">'+part.technique+'</p></details>').join('')+'<p class="muted small">'+b.note+'</p><a class="source-link" href="'+b.source+'" target="_blank" rel="noopener noreferrer">Open complete published bass tablature ↗</a>';
