@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as alphaTab from '@coderline/alphatab';
+import { songs } from './songs';
 
 const initialTex = [
   '\\title "Arpeggio Study"',
@@ -70,17 +71,21 @@ function Score({ tex, playback }: { tex: string; playback: boolean }) {
 
 export default function App() {
   const [view, setView] = useState<View>('simple');
+  const [songId, setSongId] = useState(songs[0].id);
+  const song = songs.find((item) => item.id === songId)!;
   const [tex, setTex] = useState(initialTex);
   const [showEditor, setShowEditor] = useState(false);
   return (
     <main className="shell">
+      <section className="song-picker"><label htmlFor="song">Test song</label><select id="song" value={songId} onChange={(e) => setSongId(e.target.value)}>{songs.map((item) => <option key={item.id} value={item.id}>{item.artist} — {item.title}</option>)}</select></section>
       <header className="header">
-        <div><span className="eyebrow">MUSIC NOTEBOOK · PROTOTYPE 01</span><h1>Arpeggio Study</h1>
-          <p className="muted">Guitar · 4/4 · 96 BPM · Original example</p></div>
-        <div className="key">Key <strong>E minor</strong></div>
+        <div><span className="eyebrow">MUSIC NOTEBOOK · PROTOTYPE 01</span><h1>{song.title}</h1>
+          <p className="muted">{song.artist} · Transcription not started</p></div>
+        <div className="key">Key <strong>Not entered</strong></div>
       </header>
+      <p className="notice">{song.notes} The notation below is an <strong>original technical demo</strong>, not a transcription of this song. Its chords, tempo and harmonic analysis belong only to the demo.</p>
       <section className="card">
-        <div className="section-title"><h2>Verse A</h2><span className="muted">4 measures</span></div>
+        <div className="section-title"><h2>Demo: Arpeggio Study</h2><span className="muted">E minor · 96 BPM · 4 measures</span></div>
         <div className="chord-grid">{chords.map((chord, i) =>
           <div className="chord" key={i}><small>BAR {i + 1}</small><strong>{chord}</strong></div>)}</div>
         <nav aria-label="Detail level" className="tabs">
