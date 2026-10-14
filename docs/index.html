@@ -26,7 +26,7 @@
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.example{font-size:12px;color:#48607e;margin-bottom:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
     @media(max-width:720px){.layout{grid-template-columns:1fr;padding:12px;gap:12px}.sidebar{position:static}.sidebar nav{grid-template-columns:1fr 1fr 1fr}.song-link{font-size:12px;padding:10px}.panel{padding:16px}.overview{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.heading{margin-top:0}.pill{white-space:normal}.bar-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:410px){.sidebar nav{grid-template-columns:1fr}.heading{flex-direction:column}.overview{grid-template-columns:1fr}}
-  </style>
+  .song-section{border:1px solid var(--line);margin:10px 0;border-radius:10px;padding:13px}.song-section summary{cursor:pointer;font-weight:650;display:flex;justify-content:space-between;gap:10px}.song-section[open]{background:#1c2c42}.source-link{border:1px solid #476794;padding:9px 12px;border-radius:10px;color:#a9ceff;font-size:13px;text-decoration:none}.source-link:hover{text-decoration:underline}.stat b{overflow-wrap:anywhere;font-size:15px}</style>
 </head>
 <body>
 <div class="layout">
@@ -40,14 +40,14 @@
   <main class="main">
     <div class="heading">
       <div><div class="label">Song workspace / Prototype 01</div><h1 id="title"></h1><div id="artist" class="muted"></div></div>
-      <span class="pill status">● Transcription pending</span>
+      <span class="pill status">● Chords sourced · tabs linked</span>
     </div>
     <section class="panel">
       <div class="label">Song overview</div>
       <div class="overview">
-        <div class="stat"><span class="muted small">Key</span><b>Not entered</b></div>
-        <div class="stat"><span class="muted small">Tempo</span><b>Not entered</b></div>
-        <div class="stat"><span class="muted small">Time signature</span><b>Not entered</b></div>
+        <div class="stat"><span class="muted small">Published key / context</span><b id="songKey"></b></div>
+        <div class="stat"><span class="muted small">Main chord pattern</span><b id="songProgression"></b></div>
+        <div class="stat"><span class="muted small">Intro chords</span><b id="songIntro"></b></div>
       </div>
       <div class="row"><h2>Parts to document</h2><span class="muted small">Planning fields</span></div>
       <div id="instruments" class="instrument-row"></div>
@@ -55,7 +55,7 @@
     <section class="panel">
       <div class="row"><h2>Sections & notes</h2><span class="muted small">Expandable detail</span></div>
       <p class="muted intro" id="notes"></p>
-      <div class="empty"><b>Section 01 · Add notation</b><p class="small">Reserved for verified chords, rhythm patterns, tablature, lyrics cues, and time-indexed harmonic context for this song.</p></div>
+      <div id="songSections"></div><h3 style="margin-top:20px">Published transcriptions</h3><div id="songSources" class="instrument-row"></div><p class="muted small">Community-submitted charts may disagree. Chords are condensed summaries; detailed tablature remains at its original source.</p>
     </section>
     <section class="panel">
       <div class="row"><h2>Notation interaction demo</h2><span class="pill">Original exercise</span></div>
@@ -71,14 +71,192 @@
         <div class="stat"><span class="muted small">Demo chord tones</span><b id="tones">E · G · B · D</b></div>
       </div>
     </section>
-    <p class="foot">Static GitHub Pages preview. Song data is a catalog stub; demo controls work locally in the browser, without a backend or sound.</p>
+    <p class="foot">Static GitHub Pages preview. Chord charts are sourced summaries; demo controls work locally in the browser, without a backend or sound.</p>
   </main>
 </div>
 <script>
 const songs=[
-  {id:'nos-vamos-invadir-sua-praia',title:'Nós Vamos Invadir Sua Praia',artist:'Ultraje a Rigor',notes:'Suggested evaluation: guitar and bass riffs, song form, vocal entries and performance cues.',parts:['Guitar','Bass','Drums','Vocals']},
-  {id:'i-saw-you-saying',title:'I Saw You Saying (That You Say That You Saw)',artist:'Raimundos',notes:'Suggested evaluation: guitar articulation, rhythm precision and vocal cues.',parts:['Guitar','Bass','Drums','Vocals']},
-  {id:'learn-to-fly',title:'Learn to Fly',artist:'Foo Fighters',notes:'Suggested evaluation: layered guitar parts, bass, drums, vocal lines and arrangement transitions.',parts:['Guitar 1','Guitar 2','Bass','Drums','Vocals']}
+  {
+    "id": "nos-vamos-invadir-sua-praia",
+    "title": "Nós Vamos Invadir Sua Praia",
+    "artist": "Ultraje a Rigor",
+    "key": "Em (published chart)",
+    "progression": "Em → Am → Em → Bm → Am → Em",
+    "intro": "Em",
+    "sections": [
+      {
+        "name": "Intro",
+        "chords": [
+          "Em"
+        ]
+      },
+      {
+        "name": "Verse",
+        "chords": [
+          "Em",
+          "Am",
+          "Em",
+          "Bm",
+          "Am",
+          "Em"
+        ]
+      },
+      {
+        "name": "Chorus",
+        "chords": [
+          "C",
+          "C7",
+          "B7",
+          "D",
+          "Em"
+        ]
+      }
+    ],
+    "notes": "Published chord chart in E minor. The bass-tab source uses a separate interpretation, so compare with the recording.",
+    "parts": [
+      "Guitar",
+      "Bass",
+      "Drums",
+      "Vocals"
+    ],
+    "sources": [
+      {
+        "label": "Chord chart · Cifra Club",
+        "url": "https://www.cifraclub.com.br/ultraje-a-rigor/nos-vamos-invadir-sua-praia/"
+      },
+      {
+        "label": "Guitar riff reference · CIFRAS",
+        "url": "https://www.cifras.com.br/tablatura/ultraje-a-rigor/nos-vamos-invadir-sua-praia"
+      },
+      {
+        "label": "Bass tab · Cifra Club",
+        "url": "https://www.cifraclub.com.br/ultraje-a-rigor/nos-vamos-invadir-sua-praia/tabs-baixo/"
+      }
+    ]
+  },
+  {
+    "id": "i-saw-you-saying",
+    "title": "I Saw You Saying (That You Say That You Saw)",
+    "artist": "Raimundos",
+    "key": "A (published chart)",
+    "progression": "A → F#m; C#m → D; Bm → E",
+    "intro": "Bm → D → A",
+    "sections": [
+      {
+        "name": "Intro",
+        "chords": [
+          "Bm",
+          "D",
+          "A",
+          "G",
+          "A"
+        ]
+      },
+      {
+        "name": "Verse",
+        "chords": [
+          "A",
+          "F#m",
+          "A",
+          "F#m",
+          "C#m",
+          "D",
+          "Bm",
+          "E"
+        ]
+      },
+      {
+        "name": "Chorus / refrain",
+        "chords": [
+          "A",
+          "F#m"
+        ]
+      }
+    ],
+    "notes": "Published guitar and bass arrangements include an A–F#m pattern and an introductory Bm–D–A progression. Simplified arrangements differ.",
+    "parts": [
+      "Guitar",
+      "Bass",
+      "Drums",
+      "Vocals"
+    ],
+    "sources": [
+      {
+        "label": "Chords and guitar tab · Cifra Club",
+        "url": "https://www.cifraclub.com.br/raimundos/i-saw-you-saying-that-you-say-that-you-saw/"
+      },
+      {
+        "label": "Bass tab · Cifra Club",
+        "url": "https://www.cifraclub.com.br/raimundos/i-saw-you-saying-that-you-say-that-you-saw/tabs-baixo/"
+      },
+      {
+        "label": "Drum chart · Cifra Club",
+        "url": "https://www.cifraclub.com.br/raimundos/i-saw-you-saying-that-you-say-that-you-saw/tabs-bateria/"
+      }
+    ]
+  },
+  {
+    "id": "learn-to-fly",
+    "title": "Learn to Fly",
+    "artist": "Foo Fighters",
+    "key": "B-centered progression (chart marked A)",
+    "progression": "B → F#m → E",
+    "intro": "B → F#m → E",
+    "sections": [
+      {
+        "name": "Intro / Verse",
+        "chords": [
+          "B",
+          "F#m",
+          "E"
+        ]
+      },
+      {
+        "name": "Chorus",
+        "chords": [
+          "B",
+          "F#m",
+          "E",
+          "G",
+          "A",
+          "B"
+        ]
+      },
+      {
+        "name": "Bridge",
+        "chords": [
+          "B",
+          "G",
+          "D",
+          "E",
+          "G",
+          "A"
+        ]
+      }
+    ],
+    "notes": "The simplified chart uses B–F#m–E. The detailed guitar arrangement uses richer voicings, including B5(9) and F#m7(11)/C#. The source labels its key A; do not treat the progression as a verified tonal analysis.",
+    "parts": [
+      "Guitar 1",
+      "Guitar 2",
+      "Bass",
+      "Drums",
+      "Vocals"
+    ],
+    "sources": [
+      {
+        "label": "Detailed guitar chart · Cifra Club",
+        "url": "https://www.cifraclub.com.br/foo-fighters/learn-to-fly/"
+      },
+      {
+        "label": "Simplified chords · Cifra Club",
+        "url": "https://www.cifraclub.com.br/foo-fighters/learn-to-fly/simplificada.html"
+      },
+      {
+        "label": "Bass tab · Cifra Club",
+        "url": "https://www.cifraclub.com.br/foo-fighters/learn-to-fly/tabs-baixo/sjwkp.html"
+      }
+    ]
+  }
 ];
 let view='simple',step=0;
 const notes=['E2','D3','G3','B3','E4','B3','G3','D3'];
@@ -90,6 +268,11 @@ function paintSong(){
   document.querySelector('#title').textContent=s.title;
   document.querySelector('#artist').textContent=s.artist;
   document.querySelector('#notes').textContent=s.notes;
+  document.querySelector('#songKey').textContent=s.key;
+  document.querySelector('#songProgression').textContent=s.progression;
+  document.querySelector('#songIntro').textContent=s.intro;
+  document.querySelector('#songSections').innerHTML=s.sections.map(section=>'<details class="song-section"><summary>'+section.name+' <span class="muted small">Tap to expand</span></summary><div class="instrument-row">'+section.chords.map(chord=>'<span class="chip">'+chord+'</span>').join('')+'</div></details>').join('');
+  document.querySelector('#songSources').innerHTML=s.sources.map(src=>'<a class="source-link" href="'+src.url+'" target="_blank" rel="noopener noreferrer">'+src.label+' ↗</a>').join('');
   document.querySelector('#instruments').innerHTML=s.parts.map(p=>'<span class="chip">'+p+'</span>').join('');
   catalog.innerHTML=songs.map(a=>'<button class="song-link '+(a.id===s.id?'active':'')+'" data-id="'+a.id+'">'+a.title+'<small>'+a.artist+'</small></button>').join('');
   catalog.querySelectorAll('button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.id});
