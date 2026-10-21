@@ -67,7 +67,7 @@
 <span id="syncStatus" role="status">Local edits remain on this device until you publish.</span>
 </section>
     <section class="panel control-panel">
-      <div><label class="label" for="tempoBpm">Metronome · BPM (saved per song)</label><div class="met-controls"><input type="number" id="tempoBpm" min="30" max="250" value="100"><button id="metToggle" class="control">▶ Start</button><div id="beatRow" class="beats"><i></i><i></i><i></i><i></i></div></div><p class="small muted">4/4 practice click · settings persist in this browser</p></div>
+      <div><label class="label" for="tempoBpm">Metronome · BPM (saved per song)</label><div class="met-controls"><input type="number" id="tempoBpm" min="30" max="250" value="100"><button id="metToggle" class="control">▶ Start</button><div id="beatRow" class="beats"><i></i><i></i><i></i><i></i></div></div><p class="small muted">4/4 practice click · settings persist in this browser</p><p class="small muted" id="tempoReference"></p></div>
     </section>
     <section class="panel">
       <div class="row"><h2>Song sequence & notes</h2><span class="small muted">Editable · order is provisional</span></div>
@@ -354,7 +354,17 @@ function chordKey(s,idx){return 'music-chords-v1-'+s.id+'-'+idx}
 function songSections(s){return s.sections.concat(retrieve(customKey(s),[]))}
 function sequenceFor(s){const sections=songSections(s),old=retrieve(seqKey(s),s.sections.map((_,i)=>i));return Array.isArray(old)?old.filter(i=>Number.isInteger(i)&&i>=0&&i<sections.length):[]}
 function persistBpm(){save('music-bpm-v1-'+currentSong().id,Math.max(30,Math.min(250,Number(document.querySelector('#tempoBpm').value)||100)))}
-function restoreBpm(){document.querySelector('#tempoBpm').value=retrieve('music-bpm-v1-'+currentSong().id,100)}
+const tempoReferences={
+ 'learn-to-fly':{range:[138,140],practice:139},
+ 'nos-vamos-invadir-sua-praia':{range:[170,172],practice:171},
+ 'i-saw-you-saying':{range:[115,116],practice:116},
+ 'born-to-be-wild':{range:[145,148],practice:147}
+};
+function restoreBpm(){
+ const song=currentSong(),reference=tempoReferences[song.id];
+ document.querySelector('#tempoBpm').value=retrieve('music-bpm-v1-'+song.id,reference?.practice??100);
+ document.querySelector('#tempoReference').textContent=reference?'Reference: '+reference.range[0]+'–'+reference.range[1]+' BPM · default '+reference.practice:'';
+}
 function redrawSequence(){
  const s=currentSong(),sections=songSections(s),seq=sequenceFor(s),host=document.querySelector('#songSequence');
  host.innerHTML=seq.map((idx,pos)=>'<details class="sequence-card" data-position="'+pos+'"><summary><span class="seq-label">'+(pos+1)+'. '+esc(sections[idx].name)+'</span><span class="seq-actions"><button type="button" data-pos="'+pos+'" data-shift="-1" '+(pos===0?'disabled':'')+' aria-label="Move left">↑</button><button type="button" data-pos="'+pos+'" data-shift="1" '+(pos===seq.length-1?'disabled':'')+' aria-label="Move right">↓</button><button type="button" data-remove="'+pos+'" aria-label="Remove">×</button></span></summary><div class="seq-body"><div class="chord-preview"></div><details class="chord-edit-fold"><summary title="Edit chord progression">✎ Edit chords</summary><label class="label" for="chords-'+pos+'">Chord progression</label><textarea class="chord-editor" id="chords-'+pos+'" data-chords="'+idx+'">'+esc(retrieve(chordKey(s,idx),sections[idx].chords.join('  ')))+'</textarea></details>'+s.parts.filter(p=>instrument==='all'||instrument===p).map(p=>instrumentLayer(s,sections[idx],idx,p)).join('')+'</div></details>').join('');
