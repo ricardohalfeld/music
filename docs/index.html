@@ -31,7 +31,7 @@
 .sync-controls button{background:#263952;color:#e6f3ff;border:1px solid #52749b;border-radius:9px;padding:9px 12px}
 .sync-controls input{min-width:210px;flex:1;background:#0b182a;color:#fff;border:1px solid #4c6481;padding:10px;border-radius:9px}
 #syncStatus{display:block;margin-top:9px;color:#b6cce5;font-size:12px;white-space:pre-wrap}
-</style>
+.met-controls #tapTempo{border-color:#759bcc;background:#304d70}#tapTempoStatus{min-height:1.2em}</style>
 </head>
 <body>
 <div class="layout">
@@ -67,7 +67,7 @@
 <span id="syncStatus" role="status">Local edits remain on this device until you publish.</span>
 </section>
     <section class="panel control-panel">
-      <div><label class="label" for="tempoBpm">Metronome · BPM (saved per song)</label><div class="met-controls"><input type="number" id="tempoBpm" min="30" max="250" value="100"><button id="metToggle" class="control">▶ Start</button><div id="beatRow" class="beats"><i></i><i></i><i></i><i></i></div></div><p class="small muted">4/4 practice click · settings persist in this browser</p><p class="small muted" id="tempoReference"></p></div>
+      <div><label class="label" for="tempoBpm">Metronome · BPM (saved per song)</label><div class="met-controls"><input type="number" id="tempoBpm" min="30" max="250" value="100"><button id="metToggle" class="control">▶ Start</button><button id="tapTempo" class="control" type="button">Tap Tempo</button><div id="beatRow" class="beats"><i></i><i></i><i></i><i></i></div></div><p class="small muted">4/4 practice click · settings persist in this browser</p><p class="small muted" id="tempoReference"></p><p class="small muted" id="tapTempoStatus" aria-live="polite">Tap along with the music to measure its tempo.</p></div>
     </section>
     <section class="panel">
       <div class="row"><h2>Song sequence & notes</h2><span class="small muted">Editable · order is provisional</span></div>
@@ -365,6 +365,35 @@ function restoreBpm(){
  document.querySelector('#tempoBpm').value=retrieve('music-bpm-v1-'+song.id,reference?.practice??100);
  document.querySelector('#tempoReference').textContent=reference?'Reference: '+reference.range[0]+'–'+reference.range[1]+' BPM · default '+reference.practice:'';
 }
+let tapLast=null,tapIntervals=[];
+function resetTapTempo(message='Tap along with the music to measure its tempo.'){
+ tapLast=null;tapIntervals=[];
+ document.querySelector('#tapTempoStatus').textContent=message;
+}
+function tapTempo(){
+ const now=performance.now();
+ const previous=tapLast;
+ if(previous!==null){
+  const interval=now-previous;
+  const recent=tapIntervals.length?tapIntervals.reduce((a,b)=>a+b,0)/tapIntervals.length:null;
+  // Reset after 3 seconds of silence, or after a gap indicating 3 or more missed beats.
+  if(interval>=3000||(recent!==null&&interval>=4*recent)){
+   resetTapTempo('Gap detected — starting a new measurement (tap 1).');
+  }else{
+   tapIntervals.push(interval);
+   if(tapIntervals.length>12)tapIntervals.shift();
+  }
+ }
+ tapLast=now;
+ if(!tapIntervals.length)return;
+ const avg=tapIntervals.reduce((a,b)=>a+b,0)/tapIntervals.length;
+ const bpm=Math.round(60000/avg);
+ document.querySelector('#tapTempoStatus').textContent=bpm+' BPM · '+tapIntervals.length+'/12 intervals averaged'+(tapIntervals.length===12?' (rolling)':'');
+ if(bpm>=30&&bpm<=250){
+  document.querySelector('#tempoBpm').value=bpm;
+  persistBpm();
+ }
+}
 function redrawSequence(){
  const s=currentSong(),sections=songSections(s),seq=sequenceFor(s),host=document.querySelector('#songSequence');
  host.innerHTML=seq.map((idx,pos)=>'<details class="sequence-card" data-position="'+pos+'"><summary><span class="seq-label">'+(pos+1)+'. '+esc(sections[idx].name)+'</span><span class="seq-actions"><button type="button" data-pos="'+pos+'" data-shift="-1" '+(pos===0?'disabled':'')+' aria-label="Move left">↑</button><button type="button" data-pos="'+pos+'" data-shift="1" '+(pos===seq.length-1?'disabled':'')+' aria-label="Move right">↓</button><button type="button" data-remove="'+pos+'" aria-label="Remove">×</button></span></summary><div class="seq-body"><div class="chord-preview"></div><details class="chord-edit-fold"><summary title="Edit chord progression">✎ Edit chords</summary><label class="label" for="chords-'+pos+'">Chord progression</label><textarea class="chord-editor" id="chords-'+pos+'" data-chords="'+idx+'">'+esc(retrieve(chordKey(s,idx),sections[idx].chords.join('  ')))+'</textarea></details>'+s.parts.filter(p=>instrument==='all'||instrument===p).map(p=>instrumentLayer(s,sections[idx],idx,p)).join('')+'</div></details>').join('');
@@ -399,6 +428,7 @@ function paintSong(){
  document.querySelector('#title').textContent=s.title;
  document.querySelector('#artist').textContent=s.artist;
  document.querySelector('#notes').textContent=s.notes;
+ resetTapTempo();
  restoreBpm();
  document.querySelector('#songKey').textContent=s.key;
  document.querySelector('#songProgression').textContent=s.progression;
@@ -439,6 +469,7 @@ document.querySelector('#addSection').onclick=()=>{const s=currentSong(),seq=seq
 document.querySelector('#createSection').onclick=()=>{const input=document.querySelector('#newSectionName'),name=input.value.trim();if(!name)return;const s=currentSong(),custom=retrieve(customKey(s),[]),index=s.sections.length+custom.length;custom.push({name,chords:[]});save(customKey(s),custom);const seq=sequenceFor(s);seq.push(index);save(seqKey(s),seq);input.value='';paintSong();const cards=document.querySelectorAll('.sequence-card');if(cards.length){cards[cards.length-1].open=true;cards[cards.length-1].scrollIntoView({behavior:'smooth',block:'center'})}};
 document.querySelector('#resetSections').onclick=()=>{const s=currentSong();save(seqKey(s),s.sections.map((_,i)=>i));redrawSequence()};
 document.querySelector('#metToggle').onclick=toggleMetro;
+document.querySelector('#tapTempo').onclick=tapTempo;
 document.querySelector('#tempoBpm').oninput=persistBpm;
 document.querySelector('#tempoBpm').onchange=e=>{e.target.value=Math.max(30,Math.min(250,Number(e.target.value)||100));persistBpm()};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&metRunning)toggleMetro()});
