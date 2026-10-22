@@ -469,13 +469,13 @@ function ensureAudio(){
  if(!context)context=new (window.AudioContext||window.webkitAudioContext)();
  if(!chordBus){
   const compressor=context.createDynamicsCompressor();
-  compressor.threshold.value=-9;
+  compressor.threshold.value=-6;
   compressor.knee.value=12;
-  compressor.ratio.value=3;
+  compressor.ratio.value=2;
   compressor.attack.value=.005;
   compressor.release.value=.18;
   const master=context.createGain();
-  master.gain.value=.72;
+  master.gain.value=.95;
   compressor.connect(master);
   master.connect(context.destination);
   chordBus=compressor;
@@ -520,7 +520,7 @@ function bindOverviewChords(){
     if(chordPress!==state)return;
     state.held=true;button.classList.add('playing');
     let index=0;
-    const tick=()=>{if(chordPress!==state||!context)return;playTone(tones[index++%tones.length],context.currentTime+.005,.45,.095)};
+    const tick=()=>{if(chordPress!==state||!context)return;playTone(tones[index++%tones.length],context.currentTime+.005,.45,.27)};
     tick();
     state.interval=setInterval(tick,60000/Math.max(30,Math.min(250,Number(document.querySelector('#tempoBpm').value)||100)));
    },350);
@@ -528,12 +528,12 @@ function bindOverviewChords(){
   button.addEventListener('pointerup',e=>{
    const state=chordPress;if(!state||state.button!==button)return;
    const wasHeld=state.held;stopChordHold();
-   if(!wasHeld)audioReady().then(()=>{const tones=state.tones,t=context.currentTime+.01;tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.11/Math.sqrt(tones.length)))}).catch(console.warn);
+   if(!wasHeld)audioReady().then(()=>{const tones=state.tones,t=context.currentTime+.01;tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.34/Math.sqrt(tones.length)))}).catch(console.warn);
   });
   button.addEventListener('pointercancel',stopChordHold);
   button.addEventListener('lostpointercapture',()=>{if(chordPress?.button===button)stopChordHold()});
   button.addEventListener('contextmenu',e=>e.preventDefault());
-  button.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();audioReady().then(()=>{const t=context.currentTime;chordPitches(button.dataset.chord).forEach((hz,i)=>playTone(hz,t+i*.009,.75,.24))})}});
+  button.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();audioReady().then(()=>{const t=context.currentTime;((tones)=>tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.34/Math.sqrt(tones.length))))(chordPitches(button.dataset.chord))})}});
  });
 }
 function drawOverviewSequence(){
