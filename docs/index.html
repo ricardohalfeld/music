@@ -463,7 +463,7 @@ function chordPitches(symbol){
  if(match[4]){const bass=36+semitone(match[4],match[5]);notes.unshift(bass)}
  return [...new Set(notes)].sort((a,b)=>a-b).map(midi=>440*Math.pow(2,(midi-69)/12));
 }
-function playTone(freq,at,duration=.55,level=.11){
+function playTone(freq,at,duration=.55,level=.3){
  const osc=context.createOscillator(),gain=context.createGain();
  osc.type='triangle';osc.frequency.setValueAtTime(freq,at);
  gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(level,at+.018);
@@ -497,7 +497,7 @@ function bindOverviewChords(){
     if(chordPress!==state)return;
     state.held=true;button.classList.add('playing');
     let index=0;
-    const tick=()=>{if(chordPress!==state||!context)return;playTone(tones[index++%tones.length],context.currentTime+.005,.45,.14)};
+    const tick=()=>{if(chordPress!==state||!context)return;playTone(tones[index++%tones.length],context.currentTime+.005,.45,.32)};
     tick();
     state.interval=setInterval(tick,60000/Math.max(30,Math.min(250,Number(document.querySelector('#tempoBpm').value)||100)));
    },350);
@@ -505,12 +505,12 @@ function bindOverviewChords(){
   button.addEventListener('pointerup',e=>{
    const state=chordPress;if(!state||state.button!==button)return;
    const wasHeld=state.held;stopChordHold();
-   if(!wasHeld)audioReady().then(()=>{const tones=state.tones,t=context.currentTime+.01;tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.075))}).catch(console.warn);
+   if(!wasHeld)audioReady().then(()=>{const tones=state.tones,t=context.currentTime+.01;tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.19))}).catch(console.warn);
   });
   button.addEventListener('pointercancel',stopChordHold);
   button.addEventListener('lostpointercapture',()=>{if(chordPress?.button===button)stopChordHold()});
   button.addEventListener('contextmenu',e=>e.preventDefault());
-  button.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();audioReady().then(()=>{const t=context.currentTime;chordPitches(button.dataset.chord).forEach((hz,i)=>playTone(hz,t+i*.009,.75,.075))})}});
+  button.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();audioReady().then(()=>{const t=context.currentTime;chordPitches(button.dataset.chord).forEach((hz,i)=>playTone(hz,t+i*.009,.75,.19))})}});
  });
 }
 function drawOverviewSequence(){
