@@ -430,6 +430,7 @@ const palette=['#86b6ff','#f5b971','#adcf99','#c6a9ee','#e99aa8','#80c7c4','#d9c
 const beatKey=(s,idx)=>'music-beats-v1-'+s.id+'-'+idx;
 function beatPattern(){const s=currentSong(),idx=sequenceFor(s)[currentPosition]??0;const saved=retrieve(beatKey(s,idx),[2,1,1,1]);return Array.isArray(saved)&&saved.length&&saved.length<=32?saved:[2,1,1,1]}
 function renderBeats(){
+ beatNumber=beatNumber%beatPattern().length;
  const arr=beatPattern();
  document.querySelector('#beatRow').innerHTML=arr.map((v,i)=>'<i class="beat-'+v+'" data-beat="'+i+'"></i>').join('');
  document.querySelector('#beatEdit').innerHTML=arr.map((v,i)=>'<button class="beat-choice beat-'+v+'" data-beat="'+i+'" title="Beat '+(i+1)+'">'+(v===2?'●':v===1?'•':'×')+'</button>').join('');
@@ -440,7 +441,7 @@ function drawOverviewSequence(){
  if(currentPosition>=seq.length)currentPosition=Math.max(0,seq.length-1);
  const label=(idx)=>sections[idx]?.name||'—';
  const progress=(idx)=>idx===undefined?'':retrieve(chordKey(s,idx),sections[idx].chords.join('  '));
- const pills=(value)=>value.split(/\\r?\\n/).map(line=>'<div class="chord-line">'+line.trim().split(/\\s+/).filter(Boolean).map(c=>'<span class="chord-pill">'+esc(c)+'</span>').join('')+'</div>').join('');
+ const pills=(value)=>value.split(/\r?\n/).map(line=>'<div class="chord-line">'+line.trim().split(/\s+/).filter(Boolean).map(c=>'<span class="chord-pill">'+esc(c)+'</span>').join('')+'</div>').join('');
  document.querySelector('#overviewSequence').innerHTML=seq.map((idx,pos)=>'<button class="section-pill '+(pos===currentPosition?'selected':'')+'" style="--rim:'+palette[idx%palette.length]+'" data-position="'+pos+'">'+esc(label(idx))+'</button>').join('');
  document.querySelectorAll('#overviewSequence button').forEach(b=>b.onclick=()=>{currentPosition=+b.dataset.position;drawOverviewSequence()});
  const now=seq[currentPosition],next=seq[currentPosition+1];
