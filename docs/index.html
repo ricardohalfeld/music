@@ -463,10 +463,10 @@ function chordPitches(symbol){
  if(match[4]){const bass=36+semitone(match[4],match[5]);notes.unshift(bass)}
  return [...new Set(notes)].sort((a,b)=>a-b).map(midi=>440*Math.pow(2,(midi-69)/12));
 }
-// Chord audio uses direct output: the previous 12:1 compressor was heavily attenuating it.
-function playTone(freq,at,duration=.55,level=.3){
+// Chord audio stays below clipping even when notes overlap.
+function playTone(freq,at,duration=.55,level=.06){
  const osc=context.createOscillator(),gain=context.createGain();
- osc.type='sawtooth';osc.frequency.setValueAtTime(freq,at);
+ osc.type='triangle';osc.frequency.setValueAtTime(freq,at);
  gain.gain.setValueAtTime(.0001,at);
  gain.gain.exponentialRampToValueAtTime(level,at+.012);
  gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
@@ -500,7 +500,7 @@ function bindOverviewChords(){
     if(chordPress!==state)return;
     state.held=true;button.classList.add('playing');
     let index=0;
-    const tick=()=>{if(chordPress!==state||!context)return;playTone(tones[index++%tones.length],context.currentTime+.005,.45,.85)};
+    const tick=()=>{if(chordPress!==state||!context)return;playTone(tones[index++%tones.length],context.currentTime+.005,.45,.095)};
     tick();
     state.interval=setInterval(tick,60000/Math.max(30,Math.min(250,Number(document.querySelector('#tempoBpm').value)||100)));
    },350);
@@ -508,7 +508,7 @@ function bindOverviewChords(){
   button.addEventListener('pointerup',e=>{
    const state=chordPress;if(!state||state.button!==button)return;
    const wasHeld=state.held;stopChordHold();
-   if(!wasHeld)audioReady().then(()=>{const tones=state.tones,t=context.currentTime+.01;tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.24))}).catch(console.warn);
+   if(!wasHeld)audioReady().then(()=>{const tones=state.tones,t=context.currentTime+.01;tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.075))}).catch(console.warn);
   });
   button.addEventListener('pointercancel',stopChordHold);
   button.addEventListener('lostpointercapture',()=>{if(chordPress?.button===button)stopChordHold()});
