@@ -463,19 +463,39 @@ function chordPitches(symbol){
  if(match[4]){const bass=36+semitone(match[4],match[5]);notes.unshift(bass)}
  return [...new Set(notes)].sort((a,b)=>a-b).map(midi=>440*Math.pow(2,(midi-69)/12));
 }
-// Chord audio stays below clipping even when notes overlap.
+// One shared chord output path keeps overlapping notes under control.
+let chordBus=null;
+function ensureAudio(){
+ if(!context)context=new (window.AudioContext||window.webkitAudioContext)();
+ if(!chordBus){
+  const compressor=context.createDynamicsCompressor();
+  compressor.threshold.value=-9;
+  compressor.knee.value=12;
+  compressor.ratio.value=3;
+  compressor.attack.value=.005;
+  compressor.release.value=.18;
+  const master=context.createGain();
+  master.gain.value=.72;
+  compressor.connect(master);
+  master.connect(context.destination);
+  chordBus=compressor;
+ }
+ return context;
+}
 function playTone(freq,at,duration=.55,level=.06){
- const osc=context.createOscillator(),gain=context.createGain();
- osc.type='triangle';osc.frequency.setValueAtTime(freq,at);
- gain.gain.setValueAtTime(.0001,at);
- gain.gain.exponentialRampToValueAtTime(level,at+.012);
+ const ctx=ensureAudio(),osc=ctx.createOscillator(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+ osc.type='triangle';
+ osc.frequency.setValueAtTime(freq,at);
+ filter.type='lowpass';filter.frequency.value=Math.min(2600,Math.max(950,freq*4));
+ gain.gain.setValueAtTime(0,at);
+ gain.gain.linearRampToValueAtTime(level,at+.025);
  gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
- osc.connect(gain);gain.connect(context.destination);
- osc.start(at);osc.stop(at+duration+.02);
+ osc.connect(filter);filter.connect(gain);gain.connect(chordBus);
+ osc.start(at);osc.stop(at+duration+.025);
+ osc.onended=()=>{osc.disconnect();filter.disconnect();gain.disconnect()};
 }
 async function audioReady(){
- context ||= new (window.AudioContext||window.webkitAudioContext)();
- await context.resume();
+ await ensureAudio().resume();
 }
 function stopChordHold(){
  if(!chordPress)return;
@@ -508,7 +528,7 @@ function bindOverviewChords(){
   button.addEventListener('pointerup',e=>{
    const state=chordPress;if(!state||state.button!==button)return;
    const wasHeld=state.held;stopChordHold();
-   if(!wasHeld)audioReady().then(()=>{const tones=state.tones,t=context.currentTime+.01;tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.075))}).catch(console.warn);
+   if(!wasHeld)audioReady().then(()=>{const tones=state.tones,t=context.currentTime+.01;tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.11/Math.sqrt(tones.length)))}).catch(console.warn);
   });
   button.addEventListener('pointercancel',stopChordHold);
   button.addEventListener('lostpointercapture',()=>{if(chordPress?.button===button)stopChordHold()});
@@ -573,7 +593,7 @@ function scheduleMetro(){
 }
 async function toggleMetro(){
  if(metRunning){metRunning=false;clearInterval(metTimer);metTimer=null;document.querySelector('#metToggle').textContent='▶ Start';document.querySelectorAll('#beatRow .beat-dot').forEach(x=>x.classList.remove('on'));return}
- try{context ||=new (window.AudioContext||window.webkitAudioContext)();await context.resume();metRunning=true;beatNumber=0;nextTick=context.currentTime+.04;metTimer=setInterval(scheduleMetro,25);scheduleMetro();document.querySelector('#metToggle').textContent='■ Stop'}catch(e){alert('Metronome audio unavailable: '+e.message)}
+ try{await audioReady();metRunning=true;beatNumber=0;nextTick=context.currentTime+.04;metTimer=setInterval(scheduleMetro,25);scheduleMetro();document.querySelector('#metToggle').textContent='■ Stop'}catch(e){alert('Metronome audio unavailable: '+e.message)}
 }
 document.querySelector('#instrumentFilter').onchange=e=>{instrument=e.target.value;redrawSequence()};
 document.querySelector('#addSection').onclick=()=>{const s=currentSong(),seq=sequenceFor(s);seq.push(+document.querySelector('#newSection').value);save(seqKey(s),seq);redrawSequence()};
