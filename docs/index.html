@@ -463,12 +463,27 @@ function chordPitches(symbol){
  if(match[4]){const bass=36+semitone(match[4],match[5]);notes.unshift(bass)}
  return [...new Set(notes)].sort((a,b)=>a-b).map(midi=>440*Math.pow(2,(midi-69)/12));
 }
+let chordOutput=null;
+function chordBus(){
+ if(chordOutput)return chordOutput;
+ const boost=context.createGain(),compressor=context.createDynamicsCompressor(),output=context.createGain();
+ boost.gain.value=10;
+ compressor.threshold.value=-20;
+ compressor.knee.value=12;
+ compressor.ratio.value=12;
+ compressor.attack.value=.003;
+ compressor.release.value=.18;
+ output.gain.value=.85;
+ boost.connect(compressor);compressor.connect(output);output.connect(context.destination);
+ chordOutput=boost;
+ return chordOutput;
+}
 function playTone(freq,at,duration=.55,level=.3){
  const osc=context.createOscillator(),gain=context.createGain();
  osc.type='triangle';osc.frequency.setValueAtTime(freq,at);
  gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(level,at+.018);
  gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
- osc.connect(gain);gain.connect(context.destination);osc.start(at);osc.stop(at+duration+.02);
+ osc.connect(gain);gain.connect(chordBus());osc.start(at);osc.stop(at+duration+.02);
 }
 async function audioReady(){
  context ||= new (window.AudioContext||window.webkitAudioContext)();
