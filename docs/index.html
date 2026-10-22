@@ -436,7 +436,7 @@ function paintSong(){
  document.querySelector('#notes').textContent=s.notes;
  resetTapTempo();
  restoreBpm();
- const keyLabel=s.key.replace(/\\s*\\([^)]*\\).*$/,'').trim();
+ const keyLabel=s.key.replace(/\s*\([^)]*\).*$/,'').trim();
  document.querySelector('#songKey').innerHTML='<span class="chord-pill">'+esc(keyLabel)+'</span>';
  const chordNames=[...new Set(s.sections.flatMap(x=>x.chords))];
  document.querySelector('#songProgression').innerHTML=chordNames.map(c=>'<span class="chord-pill">'+esc(c)+'</span>').join('');
