@@ -463,27 +463,15 @@ function chordPitches(symbol){
  if(match[4]){const bass=36+semitone(match[4],match[5]);notes.unshift(bass)}
  return [...new Set(notes)].sort((a,b)=>a-b).map(midi=>440*Math.pow(2,(midi-69)/12));
 }
-let chordOutput=null;
-function chordBus(){
- if(chordOutput)return chordOutput;
- const boost=context.createGain(),compressor=context.createDynamicsCompressor(),output=context.createGain();
- boost.gain.value=10;
- compressor.threshold.value=-20;
- compressor.knee.value=12;
- compressor.ratio.value=12;
- compressor.attack.value=.003;
- compressor.release.value=.18;
- output.gain.value=.85;
- boost.connect(compressor);compressor.connect(output);output.connect(context.destination);
- chordOutput=boost;
- return chordOutput;
-}
+// Chord audio uses direct output: the previous 12:1 compressor was heavily attenuating it.
 function playTone(freq,at,duration=.55,level=.3){
  const osc=context.createOscillator(),gain=context.createGain();
- osc.type='triangle';osc.frequency.setValueAtTime(freq,at);
- gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(level,at+.018);
+ osc.type='sawtooth';osc.frequency.setValueAtTime(freq,at);
+ gain.gain.setValueAtTime(.0001,at);
+ gain.gain.exponentialRampToValueAtTime(level,at+.012);
  gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
- osc.connect(gain);gain.connect(chordBus());osc.start(at);osc.stop(at+duration+.02);
+ osc.connect(gain);gain.connect(context.destination);
+ osc.start(at);osc.stop(at+duration+.02);
 }
 async function audioReady(){
  context ||= new (window.AudioContext||window.webkitAudioContext)();
@@ -512,7 +500,7 @@ function bindOverviewChords(){
     if(chordPress!==state)return;
     state.held=true;button.classList.add('playing');
     let index=0;
-    const tick=()=>{if(chordPress!==state||!context)return;playTone(tones[index++%tones.length],context.currentTime+.005,.45,.32)};
+    const tick=()=>{if(chordPress!==state||!context)return;playTone(tones[index++%tones.length],context.currentTime+.005,.45,.85)};
     tick();
     state.interval=setInterval(tick,60000/Math.max(30,Math.min(250,Number(document.querySelector('#tempoBpm').value)||100)));
    },350);
@@ -520,12 +508,12 @@ function bindOverviewChords(){
   button.addEventListener('pointerup',e=>{
    const state=chordPress;if(!state||state.button!==button)return;
    const wasHeld=state.held;stopChordHold();
-   if(!wasHeld)audioReady().then(()=>{const tones=state.tones,t=context.currentTime+.01;tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.19))}).catch(console.warn);
+   if(!wasHeld)audioReady().then(()=>{const tones=state.tones,t=context.currentTime+.01;tones.forEach((hz,i)=>playTone(hz,t+i*.009,.75,.24))}).catch(console.warn);
   });
   button.addEventListener('pointercancel',stopChordHold);
   button.addEventListener('lostpointercapture',()=>{if(chordPress?.button===button)stopChordHold()});
   button.addEventListener('contextmenu',e=>e.preventDefault());
-  button.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();audioReady().then(()=>{const t=context.currentTime;chordPitches(button.dataset.chord).forEach((hz,i)=>playTone(hz,t+i*.009,.75,.19))})}});
+  button.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();audioReady().then(()=>{const t=context.currentTime;chordPitches(button.dataset.chord).forEach((hz,i)=>playTone(hz,t+i*.009,.75,.24))})}});
  });
 }
 function drawOverviewSequence(){
