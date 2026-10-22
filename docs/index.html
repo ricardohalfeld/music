@@ -31,7 +31,7 @@
 .sync-controls button{background:#263952;color:#e6f3ff;border:1px solid #52749b;border-radius:9px;padding:9px 12px}
 .sync-controls input{min-width:210px;flex:1;background:#0b182a;color:#fff;border:1px solid #4c6481;padding:10px;border-radius:9px}
 #syncStatus{display:block;margin-top:9px;color:#b6cce5;font-size:12px;white-space:pre-wrap}
-.met-controls #tapTempo{border-color:#759bcc;background:#304d70}#tapTempoStatus{min-height:1.2em}.compact-overview{grid-template-columns:minmax(80px,1fr) minmax(0,3fr);margin:12px 0}.overview-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;align-items:center}.overview-pills .chord-pill{margin:0;font-size:13px;padding:4px 12px}.sequence-pills{margin-top:10px;gap:5px}.section-pill{display:inline-block;border:1px solid #53769c;border-radius:999px;background:#223750;color:#cfe4ff;padding:5px 11px;font-size:12px}.sequence-arrow{color:#8aaccf;padding:0 2px}.control-panel #tapTempoStatus:empty{display:none}@media(max-width:410px){.compact-overview{grid-template-columns:1fr}}.sequence-pills{gap:6px;margin-bottom:14px}.sequence-pills .section-pill{border:2px solid var(--rim);cursor:pointer}.section-pill.selected{background:#395777;color:#fff}.stage{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto;gap:10px;align-items:stretch}.stage-main,.stage-next{min-width:0;background:#101e30;border:2px solid var(--rim);border-radius:13px;padding:14px}.stage-main h2{margin:8px 0}.stage-next h3{margin:7px 0}.stage-next .chord-pill{font-size:11px;padding:3px 8px}.chord-line{width:100%;display:flex;flex-wrap:wrap;gap:5px;margin:4px 0}.stage #advancePart{align-self:center}.beat-editor{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}.beat-editor .beats{gap:5px}.beat-choice{border:1px solid #607e9f;border-radius:8px;background:#1b344f;color:white;width:29px;height:33px;cursor:pointer}.beat-choice.beat-2{background:#9d6e29}.beat-choice.beat-0{opacity:.45}.beats i.beat-0{opacity:.25}.beats i.on.beat-2{background:#ffd18a}.beats i.on.beat-1{background:#91c1ff}@media(max-width:630px){.stage{grid-template-columns:minmax(0,1fr) minmax(0,.8fr)}.stage #advancePart{grid-column:1/-1}}</style>
+.met-controls #tapTempo{border-color:#759bcc;background:#304d70}#tapTempoStatus{min-height:1.2em}.compact-overview{grid-template-columns:minmax(80px,1fr) minmax(0,3fr);margin:12px 0}.overview-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;align-items:center}.overview-pills .chord-pill{margin:0;font-size:13px;padding:4px 12px}.sequence-pills{margin-top:10px;gap:5px}.section-pill{display:inline-block;border:1px solid #53769c;border-radius:999px;background:#223750;color:#cfe4ff;padding:5px 11px;font-size:12px}.sequence-arrow{color:#8aaccf;padding:0 2px}.control-panel #tapTempoStatus:empty{display:none}@media(max-width:410px){.compact-overview{grid-template-columns:1fr}}.sequence-pills{gap:6px;margin-bottom:14px}.sequence-pills .section-pill{border:2px solid var(--rim);cursor:pointer}.section-pill.selected{background:#395777;color:#fff}.stage{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto;gap:10px;align-items:stretch}.stage-main,.stage-next{min-width:0;background:#101e30;border:2px solid var(--rim);border-radius:13px;padding:14px}.stage-main h2{margin:8px 0}.stage-next h3{margin:7px 0}.stage-next .chord-pill{font-size:11px;padding:3px 8px}.chord-line{width:100%;display:flex;flex-wrap:wrap;gap:5px;margin:4px 0}.stage #advancePart{align-self:center}.beat-editor{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}.beat-editor .beats{gap:5px}.beat-choice{border:1px solid #607e9f;border-radius:8px;background:#1b344f;color:white;width:29px;height:33px;cursor:pointer}.beat-choice.beat-2{background:#9d6e29}.beat-choice.beat-0{opacity:.45}.beats i.beat-0{opacity:.25}.beats i.on.beat-2{background:#ffd18a}.beats i.on.beat-1{background:#91c1ff}@media(max-width:630px){.stage{grid-template-columns:minmax(0,1fr) minmax(0,.8fr)}.stage #advancePart{grid-column:1/-1}}.beat-editor{align-items:center}.beat-editor #beatRow{display:flex;gap:9px;flex-wrap:wrap}.beat-dot{appearance:none;width:21px;height:21px;padding:0;border-radius:50%;cursor:pointer;background:var(--beat-rim);border:2px solid var(--beat-rim);transition:opacity .12s,transform .12s,box-shadow .12s}.beat-dot.beat-2{opacity:1}.beat-dot.beat-1{opacity:.48}.beat-dot.beat-0{opacity:.13}.beat-dot.on{transform:scale(1.32);box-shadow:0 0 0 3px #ffffff55,0 0 12px var(--beat-rim)}.beat-dot:focus-visible{outline:2px solid white;outline-offset:4px}</style>
 </head>
 <body>
 <div class="layout">
@@ -58,8 +58,8 @@
     </section>
     <section class="panel control-panel" aria-label="Metronome">
       <div><label class="label" for="tempoBpm">Metronome · BPM</label>
-        <div class="met-controls"><input type="number" id="tempoBpm" min="30" max="250" value="100"><button id="metToggle" class="control">▶ Start</button><button id="tapTempo" class="control" type="button">Tap Tempo</button><button id="resetSongTempo" class="control" type="button">↺ Song tempo</button><div id="beatRow" class="beats"></div></div>
-        <div class="beat-editor"><span class="small muted">Section beats · tap a beat to cycle normal → accent → silent</span><div id="beatEdit" class="beats"></div><button id="beatAdd" class="control" type="button">+ Beat</button><button id="beatRemove" class="control" type="button">− Beat</button></div><span id="tempoReference" hidden></span><span id="tapTempoStatus" class="small muted" aria-live="polite"></span>
+        <div class="met-controls"><input type="number" id="tempoBpm" min="30" max="250" value="100"><button id="metToggle" class="control">▶ Start</button><button id="tapTempo" class="control" type="button">Tap Tempo</button><button id="resetSongTempo" class="control" type="button">↺ Song tempo</button></div>
+        <div class="beat-editor"><div id="beatRow" class="beats" aria-label="Tap beats to change accent"></div><button id="beatAdd" class="control" type="button">+ Beat</button><button id="beatRemove" class="control" type="button">− Beat</button></div><span id="tempoReference" hidden></span><span id="tapTempoStatus" class="small muted" aria-live="polite"></span>
       </div>
     </section>
     <section class="panel" aria-label="Shared song edits">
@@ -430,11 +430,19 @@ const palette=['#86b6ff','#f5b971','#adcf99','#c6a9ee','#e99aa8','#80c7c4','#d9c
 const beatKey=(s,idx)=>'music-beats-v1-'+s.id+'-'+idx;
 function beatPattern(){const s=currentSong(),idx=sequenceFor(s)[currentPosition]??0;const saved=retrieve(beatKey(s,idx),[2,1,1,1]);return Array.isArray(saved)&&saved.length&&saved.length<=32?saved:[2,1,1,1]}
 function renderBeats(){
- beatNumber=beatNumber%beatPattern().length;
  const arr=beatPattern();
- document.querySelector('#beatRow').innerHTML=arr.map((v,i)=>'<i class="beat-'+v+'" data-beat="'+i+'"></i>').join('');
- document.querySelector('#beatEdit').innerHTML=arr.map((v,i)=>'<button class="beat-choice beat-'+v+'" data-beat="'+i+'" title="Beat '+(i+1)+'">'+(v===2?'●':v===1?'•':'×')+'</button>').join('');
- document.querySelectorAll('#beatEdit button').forEach(b=>b.onclick=()=>{const s=currentSong(),idx=sequenceFor(s)[currentPosition]??0,a=beatPattern();a[+b.dataset.beat]=(a[+b.dataset.beat]+1)%3;save(beatKey(s,idx),a);renderBeats()});
+ beatNumber%=arr.length;
+ const idx=sequenceFor(currentSong())[currentPosition]??0;
+ const rim=palette[idx%palette.length];
+ const row=document.querySelector('#beatRow');
+ row.style.setProperty('--beat-rim',rim);
+ row.innerHTML=arr.map((v,i)=>'<button type="button" class="beat-dot beat-'+v+'" data-beat="'+i+'" aria-label="Beat '+(i+1)+': '+(v===2?'accent':v===1?'regular':'muted')+'" title="Beat '+(i+1)+'" style="--beat-rim:'+rim+'"></button>').join('');
+ row.querySelectorAll('button').forEach(dot=>dot.onclick=()=>{
+  const s=currentSong(),section=sequenceFor(s)[currentPosition]??0,values=beatPattern();
+  values[+dot.dataset.beat]=(values[+dot.dataset.beat]+1)%3;
+  save(beatKey(s,section),values);
+  renderBeats();
+ });
 }
 function drawOverviewSequence(){
  const s=currentSong(),sections=songSections(s),seq=sequenceFor(s);
@@ -488,12 +496,12 @@ function scheduleMetro(){
  while(nextTick<context.currentTime+.1){
   const beat=beatNumber%pattern.length,time=nextTick;
   if(pattern[beat])clickAt(time,pattern[beat]===2);
-  setTimeout(()=>{if(metRunning)document.querySelectorAll('#beatRow i').forEach((node,index)=>node.classList.toggle('on',index===beat))},Math.max(0,(time-context.currentTime)*1000));
+  setTimeout(()=>{if(metRunning)document.querySelectorAll('#beatRow .beat-dot').forEach((node,index)=>node.classList.toggle('on',index===beat))},Math.max(0,(time-context.currentTime)*1000));
   nextTick+=60/bpm;beatNumber=(beatNumber+1)%pattern.length;
  }
 }
 async function toggleMetro(){
- if(metRunning){metRunning=false;clearInterval(metTimer);metTimer=null;document.querySelector('#metToggle').textContent='▶ Start';document.querySelectorAll('#beatRow i').forEach(x=>x.classList.remove('on'));return}
+ if(metRunning){metRunning=false;clearInterval(metTimer);metTimer=null;document.querySelector('#metToggle').textContent='▶ Start';document.querySelectorAll('#beatRow .beat-dot').forEach(x=>x.classList.remove('on'));return}
  try{context ||=new (window.AudioContext||window.webkitAudioContext)();await context.resume();metRunning=true;beatNumber=0;nextTick=context.currentTime+.04;metTimer=setInterval(scheduleMetro,25);scheduleMetro();document.querySelector('#metToggle').textContent='■ Stop'}catch(e){alert('Metronome audio unavailable: '+e.message)}
 }
 document.querySelector('#instrumentFilter').onchange=e=>{instrument=e.target.value;redrawSequence()};
