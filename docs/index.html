@@ -31,7 +31,7 @@
 .sync-controls button{background:#263952;color:#e6f3ff;border:1px solid #52749b;border-radius:9px;padding:9px 12px}
 .sync-controls input{min-width:210px;flex:1;background:#0b182a;color:#fff;border:1px solid #4c6481;padding:10px;border-radius:9px}
 #syncStatus{display:block;margin-top:9px;color:#b6cce5;font-size:12px;white-space:pre-wrap}
-.met-controls #tapTempo{border-color:#759bcc;background:#304d70}#tapTempoStatus{min-height:1.2em}</style>
+.met-controls #tapTempo{border-color:#759bcc;background:#304d70}#tapTempoStatus{min-height:1.2em}.compact-overview{grid-template-columns:minmax(80px,1fr) minmax(0,3fr);margin:12px 0}.overview-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;align-items:center}.overview-pills .chord-pill{margin:0;font-size:13px;padding:4px 12px}.sequence-pills{margin-top:10px;gap:5px}.section-pill{display:inline-block;border:1px solid #53769c;border-radius:999px;background:#223750;color:#cfe4ff;padding:5px 11px;font-size:12px}.sequence-arrow{color:#8aaccf;padding:0 2px}.control-panel #tapTempoStatus:empty{display:none}@media(max-width:410px){.compact-overview{grid-template-columns:1fr}}</style>
 </head>
 <body>
 <div class="layout">
@@ -47,15 +47,20 @@
       <div><div class="label">Song workspace / Prototype 01</div><h1 id="title"></h1><div id="artist" class="muted"></div></div>
       <span class="pill status">● Chords sourced · tabs linked</span>
     </div>
-    <section class="panel">
+    <section class="panel overview-panel">
       <div class="label">Song overview</div>
-      <div class="overview">
-        <div class="stat"><span class="muted small">Published key / context</span><b id="songKey"></b></div>
-        <div class="stat"><span class="muted small">Main chord pattern</span><b id="songProgression"></b></div>
-        <div class="stat"><span class="muted small">Intro chords</span><b id="songIntro"></b></div>
+      <div class="overview compact-overview">
+        <div class="stat"><span class="muted small">Key</span><div id="songKey" class="overview-pills"></div></div>
+        <div class="stat"><span class="muted small">Main chords</span><div id="songProgression" class="overview-pills"></div></div>
       </div>
-      <div class="row"><h2>Parts to document</h2><span class="muted small">Planning fields</span></div>
-      <div id="instruments" class="instrument-row"></div>
+      <div class="muted small">Song sequence</div>
+      <div id="overviewSequence" class="overview-pills sequence-pills"></div>
+    </section>
+    <section class="panel control-panel" aria-label="Metronome">
+      <div><label class="label" for="tempoBpm">Metronome · BPM</label>
+        <div class="met-controls"><input type="number" id="tempoBpm" min="30" max="250" value="100"><button id="metToggle" class="control">▶ Start</button><button id="tapTempo" class="control" type="button">Tap Tempo</button><button id="resetSongTempo" class="control" type="button">↺ Song tempo</button><div id="beatRow" class="beats"><i></i><i></i><i></i><i></i></div></div>
+        <span id="tempoReference" hidden></span><span id="tapTempoStatus" class="small muted" aria-live="polite"></span>
+      </div>
     </section>
     <section class="panel" aria-label="Shared song edits">
 <div class="label">GitHub sync · current song</div>
@@ -66,9 +71,6 @@
 <div class="sync-controls"><input id="syncToken" type="password" autocomplete="off" placeholder="Fine-grained GitHub token" aria-label="GitHub token"><button id="syncClearToken" type="button">Clear token</button></div></details>
 <span id="syncStatus" role="status">Local edits remain on this device until you publish.</span>
 </section>
-    <section class="panel control-panel">
-      <div><label class="label" for="tempoBpm">Metronome · BPM (saved per song)</label><div class="met-controls"><input type="number" id="tempoBpm" min="30" max="250" value="100"><button id="metToggle" class="control">▶ Start</button><button id="tapTempo" class="control" type="button">Tap Tempo</button><div id="beatRow" class="beats"><i></i><i></i><i></i><i></i></div></div><p class="small muted">4/4 practice click · settings persist in this browser</p><p class="small muted" id="tempoReference"></p><p class="small muted" id="tapTempoStatus" aria-live="polite">Tap along with the music to measure its tempo.</p></div>
-    </section>
     <section class="panel">
       <div class="row"><h2>Song sequence & notes</h2><span class="small muted">Editable · order is provisional</span></div>
       <p class="small muted">Each step unfolds its chords and instrument notes in place. Move or repeat sections to build your arrangement.</p>
@@ -366,7 +368,7 @@ function restoreBpm(){
  document.querySelector('#tempoReference').textContent=reference?'Reference: '+reference.range[0]+'–'+reference.range[1]+' BPM · default '+reference.practice:'';
 }
 let tapLast=null,tapIntervals=[];
-function resetTapTempo(message='Tap along with the music to measure its tempo.'){
+function resetTapTempo(message=''){
  tapLast=null;tapIntervals=[];
  document.querySelector('#tapTempoStatus').textContent=message;
 }
@@ -397,7 +399,7 @@ function tapTempo(){
 function redrawSequence(){
  const s=currentSong(),sections=songSections(s),seq=sequenceFor(s),host=document.querySelector('#songSequence');
  host.innerHTML=seq.map((idx,pos)=>'<details class="sequence-card" data-position="'+pos+'"><summary><span class="seq-label">'+(pos+1)+'. '+esc(sections[idx].name)+'</span><span class="seq-actions"><button type="button" data-pos="'+pos+'" data-shift="-1" '+(pos===0?'disabled':'')+' aria-label="Move left">↑</button><button type="button" data-pos="'+pos+'" data-shift="1" '+(pos===seq.length-1?'disabled':'')+' aria-label="Move right">↓</button><button type="button" data-remove="'+pos+'" aria-label="Remove">×</button></span></summary><div class="seq-body"><div class="chord-preview"></div><details class="chord-edit-fold"><summary title="Edit chord progression">✎ Edit chords</summary><label class="label" for="chords-'+pos+'">Chord progression</label><textarea class="chord-editor" id="chords-'+pos+'" data-chords="'+idx+'">'+esc(retrieve(chordKey(s,idx),sections[idx].chords.join('  ')))+'</textarea></details>'+s.parts.filter(p=>instrument==='all'||instrument===p).map(p=>instrumentLayer(s,sections[idx],idx,p)).join('')+'</div></details>').join('');
- host.querySelectorAll('.sequence-card>summary button').forEach(btn=>btn.onclick=e=>{e.preventDefault();e.stopPropagation();const i=Number(btn.dataset.pos);if(btn.hasAttribute('data-shift')){const j=i+Number(btn.dataset.shift);[seq[i],seq[j]]=[seq[j],seq[i]]}else seq.splice(i,1);save(seqKey(s),seq);redrawSequence()});
+ host.querySelectorAll('.sequence-card>summary button').forEach(btn=>btn.onclick=e=>{e.preventDefault();e.stopPropagation();const i=Number(btn.dataset.pos);if(btn.hasAttribute('data-shift')){const j=i+Number(btn.dataset.shift);[seq[i],seq[j]]=[seq[j],seq[i]]}else seq.splice(i,1);save(seqKey(s),seq);redrawSequence();drawOverviewSequence()});
  host.querySelectorAll('[data-chords]').forEach(t=>{const preview=t.closest('.seq-body').querySelector('.chord-preview');const sync=()=>{save(chordKey(s,Number(t.dataset.chords)),t.value);preview.replaceChildren(...t.value.split(/\r?\n/).flatMap((line,i)=>{const elements=[];if(i)elements.push(document.createElement('div'));for(const chord of line.trim().split(/\s+/).filter(Boolean)){const pill=document.createElement('span');pill.className='chord-pill';pill.textContent=chord;elements.push(pill)}return elements}))};sync();t.addEventListener('input',sync)});
  host.querySelectorAll('[data-note-key]').forEach(t=>t.addEventListener('input',()=>save(t.dataset.noteKey,t.value)));
 }
@@ -423,6 +425,10 @@ function instrumentLayer(s,section,sectionIndex,p){
  else{detail='<p class="muted small">Add your '+esc(p.toLowerCase())+' playing notes here.</p>'}
  return '<details class="part-layer" '+(instrument!=='all'?'open':'')+'><summary>'+esc(p)+' · '+(isBass?'Bass lines, frets & technique':isVoice?'Lyrics & vocal cues':'Playing notes')+'</summary>'+detail+'<textarea data-note-key="'+esc(key)+' placeholder="Your notes…">'+esc(value)+'</textarea></details>'
 }
+function drawOverviewSequence(){
+ const s=currentSong(),sections=songSections(s);
+ document.querySelector('#overviewSequence').innerHTML=sequenceFor(s).map((i,pos)=>'<span class="section-pill">'+esc(sections[i].name)+'</span>').join('<span class="sequence-arrow">›</span>');
+}
 function paintSong(){
  const s=currentSong();
  document.querySelector('#title').textContent=s.title;
@@ -430,10 +436,11 @@ function paintSong(){
  document.querySelector('#notes').textContent=s.notes;
  resetTapTempo();
  restoreBpm();
- document.querySelector('#songKey').textContent=s.key;
- document.querySelector('#songProgression').textContent=s.progression;
- document.querySelector('#songIntro').textContent=s.intro;
- document.querySelector('#instruments').innerHTML=s.parts.map(p=>'<span class="chip">'+esc(p)+'</span>').join('');
+ const keyLabel=s.key.replace(/\\s*\\([^)]*\\).*$/,'').trim();
+ document.querySelector('#songKey').innerHTML='<span class="chord-pill">'+esc(keyLabel)+'</span>';
+ const chordNames=[...new Set(s.sections.flatMap(x=>x.chords))];
+ document.querySelector('#songProgression').innerHTML=chordNames.map(c=>'<span class="chord-pill">'+esc(c)+'</span>').join('');
+ drawOverviewSequence();
  document.querySelector('#songSources').innerHTML=s.sources.map(src=>'<a class="source-link" href="'+src.url+'" target="_blank" rel="noopener noreferrer">'+esc(src.label)+' ↗</a>').join('');
  const filter=document.querySelector('#instrumentFilter');
  filter.innerHTML='<option value="all">All instruments</option>'+s.parts.map(p=>'<option value="'+esc(p)+'">'+esc(p)+'</option>').join('');
@@ -467,8 +474,9 @@ async function toggleMetro(){
 document.querySelector('#instrumentFilter').onchange=e=>{instrument=e.target.value;redrawSequence()};
 document.querySelector('#addSection').onclick=()=>{const s=currentSong(),seq=sequenceFor(s);seq.push(+document.querySelector('#newSection').value);save(seqKey(s),seq);redrawSequence()};
 document.querySelector('#createSection').onclick=()=>{const input=document.querySelector('#newSectionName'),name=input.value.trim();if(!name)return;const s=currentSong(),custom=retrieve(customKey(s),[]),index=s.sections.length+custom.length;custom.push({name,chords:[]});save(customKey(s),custom);const seq=sequenceFor(s);seq.push(index);save(seqKey(s),seq);input.value='';paintSong();const cards=document.querySelectorAll('.sequence-card');if(cards.length){cards[cards.length-1].open=true;cards[cards.length-1].scrollIntoView({behavior:'smooth',block:'center'})}};
-document.querySelector('#resetSections').onclick=()=>{const s=currentSong();save(seqKey(s),s.sections.map((_,i)=>i));redrawSequence()};
+document.querySelector('#resetSections').onclick=()=>{const s=currentSong();save(seqKey(s),s.sections.map((_,i)=>i));redrawSequence();drawOverviewSequence()};
 document.querySelector('#metToggle').onclick=toggleMetro;
+document.querySelector('#resetSongTempo').onclick=()=>{const s=currentSong();document.querySelector('#tempoBpm').value=tempoReferences[s.id]?.practice??100;persistBpm();resetTapTempo()};
 document.querySelector('#tapTempo').onclick=tapTempo;
 document.querySelector('#tempoBpm').oninput=persistBpm;
 document.querySelector('#tempoBpm').onchange=e=>{e.target.value=Math.max(30,Math.min(250,Number(e.target.value)||100));persistBpm()};
