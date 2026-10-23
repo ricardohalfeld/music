@@ -548,6 +548,24 @@ let instrument='all',context=null,metTimer=null,nextTick=0,beatNumber=0,metRunni
 const esc=v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 function retrieve(key,fallback){try{let x=JSON.parse(localStorage.getItem(key));return x===null?fallback:x}catch{return fallback}}
 function save(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch(e){console.warn('Could not save',e)}}
+// Keep user edits, but replace auto-saved chords from the earlier abbreviated charts.
+const previousCharts={
+ 'nos-vamos-invadir-sua-praia':['Em','Em  Am  Em  Bm  Am  Em','C  C7  B7  D  Em'],
+ 'learn-to-fly':['B  F#m  E','B  F#m  E  G  A  B','B  G  D  E  G  A'],
+ 'i-saw-you-saying':['Bm  D  A  G  A','A  F#m  A  F#m  C#m  D  Bm  E','A  F#m']
+};
+function upgradePhotoCharts(s){
+ if(!previousCharts[s.id])return;
+ const stamp='music-photo-chart-v1-'+s.id;
+ if(retrieve(stamp,false))return;
+ previousCharts[s.id].forEach((old,idx)=>{
+  const key=chordKey(s,idx);
+  if(retrieve(key,null)===old)localStorage.removeItem(key);
+ });
+ const key=seqKey(s),saved=retrieve(key,null);
+ if(Array.isArray(saved)&&saved.length===3&&saved.every((n,i)=>n===i))localStorage.removeItem(key);
+ save(stamp,true);
+}
 function seqKey(s){return 'music-sequence-v1-'+s.id}
 function customKey(s){return 'music-custom-sections-v1-'+s.id}
 function chordKey(s,idx){return 'music-chords-v1-'+s.id+'-'+idx}
@@ -768,6 +786,7 @@ function drawOverviewSequence(){
 }
 function paintSong(){
  const s=currentSong();
+ upgradePhotoCharts(s);
  document.querySelector('#title').textContent=s.title;
  document.querySelector('#artist').textContent=s.artist;
  document.querySelector('#notes').textContent=s.notes;
