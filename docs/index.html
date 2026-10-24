@@ -571,9 +571,10 @@ function customKey(s){return 'music-custom-sections-v1-'+s.id}
 function chordKey(s,idx){return 'music-chords-v1-'+s.id+'-'+idx}
 function nameKey(s,idx){return 'music-section-name-v1-'+s.id+'-'+idx}
 function songSections(s){return s.sections.concat(retrieve(customKey(s),[])).map((section,idx)=>({...section,name:retrieve(nameKey(s,idx),section.name)}))}
+function suggestedBars(name){const match=String(name).match(/(?:×|\bx)\s*(\d+)\b|\b(\d+)\s*[x×]\b/i);return match?Math.min(256,Math.max(1,Number(match[1]||match[2]))):4}
 function entriesFor(s){
  const sections=songSections(s),raw=retrieve(seqKey(s),s.defaultSequence??s.sections.map((_,i)=>i));
- return Array.isArray(raw)?raw.map(item=>typeof item==='number'?{section:item,bars:4}:item).filter(item=>item&&Number.isInteger(item.section)&&item.section>=0&&item.section<sections.length).map(item=>({section:item.section,bars:Math.min(256,Math.max(1,Number(item.bars)||4)),beats:Array.isArray(item.beats)&&item.beats.length>=1&&item.beats.length<=32?item.beats.map(x=>[0,1,2].includes(x)?x:1):null})):[];
+ return Array.isArray(raw)?raw.map(item=>typeof item==='number'?{section:item,bars:suggestedBars(sections[item]?.name)}:item).filter(item=>item&&Number.isInteger(item.section)&&item.section>=0&&item.section<sections.length).map(item=>({section:item.section,bars:Math.min(256,Math.max(1,Number(item.bars)||4)),beats:Array.isArray(item.beats)&&item.beats.length>=1&&item.beats.length<=32?item.beats.map(x=>[0,1,2].includes(x)?x:1):null})):[];
 }
 function sequenceFor(s){return entriesFor(s).map(entry=>entry.section)}
 function storeEntries(s,entries){save(seqKey(s),entries);redrawSequencer();drawOverviewSequence()}
@@ -857,9 +858,9 @@ async function toggleMetro(){
  try{await audioReady();metRunning=true;beatNumber=0;elapsedBeats=0;nextTick=context.currentTime+.04;metTimer=setInterval(scheduleMetro,25);scheduleMetro();document.querySelector('#metToggle').textContent='■ Stop'}catch(e){alert('Metronome audio unavailable: '+e.message)}
 }
 document.querySelector('#instrumentFilter').onchange=e=>{instrument=e.target.value;redrawSequence()};
-document.querySelector('#addSection').onclick=()=>{const song=currentSong(),entries=entriesFor(song);entries.push({section:+document.querySelector('#newSection').value,bars:4,beats:null});storeEntries(song,entries)};
-document.querySelector('#createSection').onclick=()=>{const input=document.querySelector('#newSectionName'),name=input.value.trim();if(!name)return;const song=currentSong(),custom=retrieve(customKey(song),[]),index=song.sections.length+custom.length;custom.push({name,chords:[]});save(customKey(song),custom);const entries=entriesFor(song);entries.push({section:index,bars:4,beats:null});save(seqKey(song),entries);input.value='';paintSong()};
-document.querySelector('#resetSections').onclick=()=>{const song=currentSong();storeEntries(song,(song.defaultSequence??song.sections.map((_,i)=>i)).map(section=>({section,bars:4,beats:null})))};
+document.querySelector('#addSection').onclick=()=>{const song=currentSong(),entries=entriesFor(song);entries.push({section:+document.querySelector('#newSection').value,bars:suggestedBars(songSections(song)[+document.querySelector('#newSection').value]?.name),beats:null});storeEntries(song,entries)};
+document.querySelector('#createSection').onclick=()=>{const input=document.querySelector('#newSectionName'),name=input.value.trim();if(!name)return;const song=currentSong(),custom=retrieve(customKey(song),[]),index=song.sections.length+custom.length;custom.push({name,chords:[]});save(customKey(song),custom);const entries=entriesFor(song);entries.push({section:index,bars:suggestedBars(name),beats:null});save(seqKey(song),entries);input.value='';paintSong()};
+document.querySelector('#resetSections').onclick=()=>{const song=currentSong();storeEntries(song,(song.defaultSequence??song.sections.map((_,i)=>i)).map(section=>({section,bars:suggestedBars(songSections(song)[section]?.name),beats:null})))};
 document.querySelector('#advancePart').onclick=()=>{currentPosition++;beatNumber=0;elapsedBeats=0;drawOverviewSequence()};
 document.querySelector('#beatAdd').onclick=()=>{const values=[...beatPattern()];if(values.length<32){values.push(1);updateOccurrenceBeats(values)}};
 document.querySelector('#beatRemove').onclick=()=>{const values=[...beatPattern()];if(values.length>1){values.pop();updateOccurrenceBeats(values)}};
