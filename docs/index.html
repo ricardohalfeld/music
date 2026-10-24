@@ -571,7 +571,12 @@ function customKey(s){return 'music-custom-sections-v1-'+s.id}
 function chordKey(s,idx){return 'music-chords-v1-'+s.id+'-'+idx}
 function nameKey(s,idx){return 'music-section-name-v1-'+s.id+'-'+idx}
 function songSections(s){return s.sections.concat(retrieve(customKey(s),[])).map((section,idx)=>({...section,name:retrieve(nameKey(s,idx),section.name)}))}
-function sequenceFor(s){const sections=songSections(s),old=retrieve(seqKey(s),s.defaultSequence??s.sections.map((_,i)=>i));return Array.isArray(old)?old.filter(i=>Number.isInteger(i)&&i>=0&&i<sections.length):[]}
+function entriesFor(s){
+ const sections=songSections(s),raw=retrieve(seqKey(s),s.defaultSequence??s.sections.map((_,i)=>i));
+ return Array.isArray(raw)?raw.map(item=>typeof item==='number'?{section:item,bars:4}:item).filter(item=>item&&Number.isInteger(item.section)&&item.section>=0&&item.section<sections.length).map(item=>({section:item.section,bars:Math.min(256,Math.max(1,Number(item.bars)||4)),beats:Array.isArray(item.beats)&&item.beats.length>=1&&item.beats.length<=32?item.beats.map(x=>[0,1,2].includes(x)?x:1):null})):[];
+}
+function sequenceFor(s){return entriesFor(s).map(entry=>entry.section)}
+function storeEntries(s,entries){save(seqKey(s),entries);redrawSequencer();drawOverviewSequence()}
 function persistBpm(){save('music-bpm-v1-'+currentSong().id,Math.max(30,Math.min(250,Number(document.querySelector('#tempoBpm').value)||100)))}
 const tempoReferences={
  'learn-to-fly':{range:[138,140],practice:139},
@@ -628,9 +633,10 @@ function redrawSequence(){
  host.querySelectorAll('[data-note-key]').forEach(t=>t.addEventListener('input',()=>save(t.dataset.noteKey,t.value)));
 }
 function redrawSequencer(){
- const s=currentSong(),sections=songSections(s),seq=sequenceFor(s),host=document.querySelector('#sequenceEditor');
- host.innerHTML=seq.map((idx,pos)=>'<div class="seq-edit-item" style="--rim:'+palette[idx%palette.length]+'"><span class="seq-label">'+(pos+1)+'. '+esc(sections[idx].name)+'</span><button data-pos="'+pos+'" data-shift="-1" '+(pos===0?'disabled':'')+' aria-label="Move earlier">↑</button><button data-pos="'+pos+'" data-shift="1" '+(pos===seq.length-1?'disabled':'')+' aria-label="Move later">↓</button><button data-remove="'+pos+'" aria-label="Remove section">×</button></div>').join('');
- host.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.pos??btn.dataset.remove);if(btn.hasAttribute('data-shift')){const j=i+Number(btn.dataset.shift);[seq[i],seq[j]]=[seq[j],seq[i]]}else seq.splice(i,1);save(seqKey(s),seq);redrawSequencer();drawOverviewSequence()});
+ const s=currentSong(),sections=songSections(s),entries=entriesFor(s),host=document.querySelector('#sequenceEditor');
+ host.innerHTML=entries.map((entry,pos)=>'<div class="seq-edit-item" style="--rim:'+palette[entry.section%palette.length]+'"><span class="seq-label">'+(pos+1)+'. '+esc(sections[entry.section].name)+'</span><label class="occ-bars" title="Number of bars in this occurrence"><input type="number" min="1" max="256" data-bars="'+pos+'" value="'+entry.bars+'" aria-label="Bars for occurrence '+(pos+1)+'"> bars</label><button data-pos="'+pos+'" data-shift="-1" '+(pos===0?'disabled':'')+' aria-label="Move earlier">↑</button><button data-pos="'+pos+'" data-shift="1" '+(pos===entries.length-1?'disabled':'')+' aria-label="Move later">↓</button><button data-remove="'+pos+'" aria-label="Remove occurrence">×</button></div>').join('');
+ host.querySelectorAll('[data-bars]').forEach(input=>input.onchange=()=>{const pos=+input.dataset.bars;entries[pos].bars=Math.min(256,Math.max(1,Math.round(+input.value||4)));storeEntries(s,entries)});
+ host.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.pos??btn.dataset.remove);if(btn.hasAttribute('data-shift')){const j=i+Number(btn.dataset.shift);[entries[i],entries[j]]=[entries[j],entries[i]]}else entries.splice(i,1);storeEntries(s,entries)});
 }
 function bassMatches(part,section){
  const a=part.name.toLowerCase(),b=section.name.toLowerCase();
@@ -657,7 +663,19 @@ function instrumentLayer(s,section,sectionIndex,p){
 let currentPosition=0, lastSongId=null;
 const palette=['#86b6ff','#f5b971','#adcf99','#c6a9ee','#e99aa8','#80c7c4','#d9c97f'];
 const beatKey=(s,idx)=>'music-beats-v1-'+s.id+'-'+idx;
-function beatPattern(){const s=currentSong(),idx=sequenceFor(s)[currentPosition]??0;const saved=retrieve(beatKey(s,idx),[2,1,1,1]);return Array.isArray(saved)&&saved.length&&saved.length<=32?saved:[2,1,1,1]}
+function beatPattern(){
+ const s=currentSong(),entry=entriesFor(s)[currentPosition];
+ if(!entry)return [2,1,1,1];
+ const original=retrieve(beatKey(s,entry.section),[2,1,1,1]);
+ return entry.beats??(Array.isArray(original)&&original.length?original:[2,1,1,1]);
+}
+function updateOccurrenceBeats(values){
+ const s=currentSong(),entries=entriesFor(s);
+ if(!entries[currentPosition])return;
+ entries[currentPosition].beats=values;
+ save(seqKey(s),entries);
+ renderBeats();
+}
 function renderBeats(){
  const arr=beatPattern();
  beatNumber%=arr.length;
@@ -667,10 +685,9 @@ function renderBeats(){
  row.style.setProperty('--beat-rim',rim);
  row.innerHTML=arr.map((v,i)=>'<button type="button" class="beat-dot beat-'+v+'" data-beat="'+i+'" aria-label="Beat '+(i+1)+': '+(v===2?'accent':v===1?'regular':'muted')+'" title="Beat '+(i+1)+'" style="--beat-rim:'+rim+'"></button>').join('');
  row.querySelectorAll('button').forEach(dot=>dot.onclick=()=>{
-  const s=currentSong(),section=sequenceFor(s)[currentPosition]??0,values=beatPattern();
+  const values=[...beatPattern()];
   values[+dot.dataset.beat]=(values[+dot.dataset.beat]+1)%3;
-  save(beatKey(s,section),values);
-  renderBeats();
+  updateOccurrenceBeats(values);
  });
 }
 
@@ -771,12 +788,13 @@ function drawOverviewSequence(){
  const s=currentSong(),sections=songSections(s),seq=sequenceFor(s);
  if(currentPosition>=seq.length)currentPosition=Math.max(0,seq.length-1);
  const label=(idx)=>sections[idx]?.name||'—';
+ const entries=entriesFor(s);
  const progress=(idx)=>idx===undefined?'':retrieve(chordKey(s,idx),sections[idx].chords.join('  '));
  const pills=(value)=>value.split(/\r?\n/).map(line=>'<div class="chord-line">'+line.trim().split(/\s+/).filter(Boolean).map(c=>'<button type="button" class="chord-pill playable-chord" data-chord="'+esc(c)+'" aria-label="Play '+esc(c)+'" title="Tap to play · hold to arpeggiate">'+esc(c)+'</button>').join('')+'</div>').join('');
- document.querySelector('#overviewSequence').innerHTML=seq.map((idx,pos)=>'<button class="section-pill '+(pos===currentPosition?'selected':'')+'" style="--rim:'+palette[idx%palette.length]+'" data-position="'+pos+'">'+esc(label(idx))+'</button>').join('');
+ document.querySelector('#overviewSequence').innerHTML=seq.map((idx,pos)=>'<button class="section-pill '+(pos===currentPosition?'selected':'')+'" style="--rim:'+palette[idx%palette.length]+'" data-position="'+pos+'">'+esc(label(idx))+' <small>×'+entries[pos].bars+' bars</small></button>').join('');
  document.querySelectorAll('#overviewSequence button').forEach(b=>b.onclick=()=>{currentPosition=+b.dataset.position;drawOverviewSequence()});
  const now=seq[currentPosition],next=seq[currentPosition+1];
- document.querySelector('#currentPart').textContent=label(now);document.querySelector('#nextPart').textContent=label(next);
+ document.querySelector('#currentPart').textContent=label(now)+(entries[currentPosition]?' · '+entries[currentPosition].bars+' bars':'');document.querySelector('#nextPart').textContent=label(next)+(entries[currentPosition+1]?' · '+entries[currentPosition+1].bars+' bars':'');
  document.querySelector('#currentChords').innerHTML=now===undefined?'':pills(progress(now));document.querySelector('#nextChords').innerHTML=next===undefined?'':pills(progress(next));
  document.querySelector('.stage-main').style.setProperty('--rim',palette[(now??0)%palette.length]);
  document.querySelector('.stage-next').style.setProperty('--rim',palette[(next??0)%palette.length]);
