@@ -850,17 +850,18 @@ function scheduleMetro(){
    const count=5-countInLeft;
    clickAt(time,count===1);
    countInLeft--;
-   setTimeout(()=>{if(metRunning&&session===playSession)document.querySelector('#songPlayStatus').textContent=countInLeft?'Count in · '+count+'/4':'Playing'},Math.max(0,(time-context.currentTime)*1000));
+   const countRemaining=countInLeft;
+   setTimeout(()=>{if(metRunning&&session===playSession)document.querySelector('#songPlayStatus').textContent=countRemaining?'Count in · '+count+'/4':'Playing'},Math.max(0,(time-context.currentTime)*1000));
    continue;
   }
   const entries=entriesFor(currentSong()),entry=entries[currentPosition];
   if(!entry){stopPlayback();return}
-  const pattern=beatPattern(),beat=beatNumber%pattern.length,position=currentPosition;
+  const pattern=beatPattern(),beat=beatNumber%pattern.length,position=currentPosition,bar=Math.floor(elapsedBeats/pattern.length)+1;
   if(pattern[beat])clickAt(time,pattern[beat]===2);
   setTimeout(()=>{
    if(!metRunning||session!==playSession)return;
    if(position===currentPosition)document.querySelectorAll('#beatRow .beat-dot').forEach((node,index)=>node.classList.toggle('on',index===beat));
-   if(songMode&&position===currentPosition)document.querySelector('#songPlayStatus').textContent='Bar '+(Math.floor((elapsedBeats-1)/pattern.length)+1)+' / '+entry.bars;
+   if(songMode&&position===currentPosition)document.querySelector('#songPlayStatus').textContent='Bar '+bar+' / '+entry.bars;
   },Math.max(0,(time-context.currentTime)*1000));
   beatNumber=(beatNumber+1)%pattern.length;
   elapsedBeats++;
