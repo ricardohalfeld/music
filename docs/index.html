@@ -55,7 +55,7 @@
     </section>
     <section class="panel control-panel" aria-label="Metronome">
       <div><label class="label" for="tempoBpm">Metronome · BPM</label>
-        <div class="met-controls"><input type="number" id="tempoBpm" min="30" max="250" value="100"><button id="metToggle" class="control">▶ Start</button><button id="tapTempo" class="control tap-large" type="button">Tap Tempo</button><button id="resetSongTempo" class="control" type="button">↺ Song tempo</button></div>
+        <div class="met-controls"><input type="number" id="tempoBpm" min="30" max="250" value="100"><button id="metToggle" class="control">▶ Start</button><button id="metMute" class="control" type="button" aria-pressed="true">🔇 Muted</button><button id="tapTempo" class="control tap-large" type="button">Tap Tempo</button><button id="resetSongTempo" class="control" type="button">↺ Song tempo</button></div>
         <div class="beat-editor"><button id="beatRemove" class="beat-adjust" type="button" aria-label="Remove beat">−</button><div id="beatRow" class="beats" aria-label="Tap beats to change accent"></div><button id="beatAdd" class="beat-adjust" type="button" aria-label="Add beat">+</button></div><span id="tempoReference" hidden></span><span id="tapTempoStatus" class="small muted" aria-live="polite"></span>
       </div>
     </section>
@@ -840,7 +840,9 @@ function paintSong(){
  catalog.querySelectorAll('button').forEach(button=>button.onclick=()=>{closeSongPicker();if(location.hash.slice(1)===button.dataset.id)paintSong();else location.hash=button.dataset.id});
  document.title=s.title+' — Music Notebook';
 }
+let metMuted=true;
 function clickAt(t,accent){
+ if(metMuted)return;
  const o=context.createOscillator(),g=context.createGain();
  o.frequency.setValueAtTime(accent?1150:790,t);g.gain.setValueAtTime(.0001,t);
  g.gain.exponentialRampToValueAtTime(.2,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.052);
@@ -933,6 +935,7 @@ document.querySelector('#nextSection').onclick=()=>{currentPosition++;beatNumber
 document.querySelector('#beatAdd').onclick=()=>{const values=[...beatPattern()];if(values.length<32){values.push(1);updateOccurrenceBeats(values)}};
 document.querySelector('#beatRemove').onclick=()=>{const values=[...beatPattern()];if(values.length>1){values.pop();updateOccurrenceBeats(values)}};
 document.querySelector('#metToggle').onclick=toggleMetro;
+document.querySelector('#metMute').onclick=()=>{metMuted=!metMuted;const b=document.querySelector('#metMute');b.textContent=metMuted?'🔇 Muted':'🔊 Sound on';b.setAttribute('aria-pressed',String(metMuted))};
 document.querySelector('#songPlay').onclick=()=>metRunning&&songMode?stopPlayback():startPlayback(true);
 document.querySelector('#resetSongTempo').onclick=()=>{const s=currentSong();document.querySelector('#tempoBpm').value=tempoReferences[s.id]?.practice??100;persistBpm();resetTapTempo()};
 document.querySelector('#tapTempo').onclick=tapTempo;
