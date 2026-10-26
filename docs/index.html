@@ -62,7 +62,7 @@
     <section class="panel">
       <h2>Song Sequencer</h2>
       <div id="sequenceEditor" class="sequence-editor"></div>
-      <div class="controls"><select id="newSection"></select><button id="addSection" class="control">+ Add</button><button id="resetSections" class="control">Reset</button></div>
+      <div class="controls"><select id="newSection"></select><button id="addSection" class="control">+ Add</button><button id="resetSections" class="control">Reset</button><button id="copyStructure" class="control" type="button">Copy structure</button><span id="copyStructureStatus" class="small muted" role="status"></span></div>
     </section>
     <section class="panel">
       <h2>Sections</h2>
@@ -575,7 +575,8 @@ function seqKey(s){return 'music-sequence-v1-'+s.id}
 function customKey(s){return 'music-custom-sections-v1-'+s.id}
 function chordKey(s,idx){return 'music-chords-v1-'+s.id+'-'+idx}
 function nameKey(s,idx){return 'music-section-name-v1-'+s.id+'-'+idx}
-function songSections(s){return s.sections.concat(retrieve(customKey(s),[])).map((section,idx)=>({...section,name:retrieve(nameKey(s,idx),section.name)}))}
+function cleanSectionName(name){return String(name).replace(/\s*(?:[·–—-]\s*)?(?:(?:×|x)\s*\d+|\d+\s*[x×])(?:\s*(?:bars?|measures?))?\s*$/i,'').trim()}
+function songSections(s){return s.sections.concat(retrieve(customKey(s),[])).map((section,idx)=>({...section,name:cleanSectionName(retrieve(nameKey(s,idx),section.name))}))}
 function suggestedBars(name){const match=String(name).match(/(?:×|\bx)\s*(\d+)\b|\b(\d+)\s*[x×]\b/i);return match?Math.min(256,Math.max(1,Number(match[1]||match[2]))):4}
 function entriesFor(s){
  const sections=songSections(s),raw=retrieve(seqKey(s),s.defaultSequence??s.sections.map((_,i)=>i));
@@ -914,6 +915,19 @@ document.querySelector('#instrumentFilter').onchange=e=>{instrument=e.target.val
 document.querySelector('#addSection').onclick=()=>{const song=currentSong(),entries=entriesFor(song);entries.push({section:+document.querySelector('#newSection').value,bars:suggestedBars(songSections(song)[+document.querySelector('#newSection').value]?.name),beats:null});storeEntries(song,entries)};
 document.querySelector('#createSection').onclick=()=>{const input=document.querySelector('#newSectionName'),name=input.value.trim();if(!name)return;const song=currentSong(),custom=retrieve(customKey(song),[]),index=song.sections.length+custom.length;custom.push({name,chords:[]});save(customKey(song),custom);const entries=entriesFor(song);entries.push({section:index,bars:suggestedBars(name),beats:null});save(seqKey(song),entries);input.value='';paintSong()};
 document.querySelector('#resetSections').onclick=()=>{const song=currentSong();storeEntries(song,(song.defaultSequence??song.sections.map((_,i)=>i)).map(section=>({section,bars:suggestedBars(songSections(song)[section]?.name),beats:null})))};
+document.querySelector('#copyStructure').onclick=async()=>{
+ const song=currentSong(),sections=songSections(song),entries=entriesFor(song);
+ const structure={songId:song.id,title:song.title,tempo:Number(document.querySelector('#tempoBpm').value),sections:sections.map((section,index)=>({index,name:section.name,chords:retrieve(chordKey(song,index),section.chords.join('  ')),notes:Object.fromEntries(song.parts.map(part=>[part,retrieve('music-note-v1-'+song.id+'-'+index+'-'+part,'')]).filter(([part,note])=>note))})),sequence:entries.map((entry,index)=>({position:index+1,section:entry.section,name:sections[entry.section].name,bars:entry.bars,beats:occurrencePattern(song,entry)}))};
+ const content=JSON.stringify(structure,null,2),status=document.querySelector('#copyStructureStatus');
+ try{
+  await navigator.clipboard.writeText(content);
+  status.textContent='Copied — paste it into ChatGPT';
+ }catch(error){
+  const textarea=document.createElement('textarea');textarea.value=content;textarea.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(textarea);textarea.select();
+  const copied=document.execCommand('copy');textarea.remove();
+  status.textContent=copied?'Copied — paste it into ChatGPT':'Clipboard unavailable; use a secure browser context.';
+ }
+};
 document.querySelector('#currentBars').onchange=e=>{const song=currentSong(),entries=entriesFor(song),entry=entries[currentPosition];if(!entry)return;entry.bars=Math.min(256,Math.max(1,Math.round(Number(e.target.value)||1)));save(seqKey(song),entries);redrawSequencer();drawOverviewSequence()};
 document.querySelector('#nextSection').onclick=()=>{currentPosition++;beatNumber=0;elapsedBeats=0;drawOverviewSequence()};
 document.querySelector('#beatAdd').onclick=()=>{const values=[...beatPattern()];if(values.length<32){values.push(1);updateOccurrenceBeats(values)}};
