@@ -993,8 +993,8 @@ function openArrangement(pos=currentPosition){
  if(metRunning)stopPlayback();
  const song=currentSong(),entry=entriesFor(song)[pos];
  if(entry)currentPosition=pos;
- redrawSequencer();redrawSequence();drawOverviewSequence();
  document.querySelector('#arrangementModal').hidden=false;
+ redrawSequencer();redrawSequence();drawOverviewSequence();
  document.querySelector('#arrangementTitle').textContent=entry?(songSections(song)[entry.section]?.name||'Section')+' · occurrence '+(pos+1):'Edit arrangement';
  document.querySelectorAll('#sequenceEditor .seq-edit-item').forEach((row,i)=>row.classList.toggle('editing-occurrence',i===pos));
  const selected=entry?document.querySelectorAll('#songSequence .sequence-card')[entry.section]:null;
